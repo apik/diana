@@ -1,0 +1,177 @@
+\MINVERSION(2.28)
+***********************************************************************
+*  Sections and Begin(foreach,) are defined.                          *
+*                                                                     *
+*  Section looks like follow: \section(condition) -- the control      *
+*  will be passed to the section if the condition is true.            *
+*                                                                     *
+*  Begin(foreach,i,5,4,-1) -- iteration from i=5 to i=4 with step -1. *
+*  Macro \i() returns current i. Default step is 1.                   *
+*                                                                     *
+*  Macro _Get_SC must put ready condition by PUSHQ into _SectCond     *
+*  In this module it just returns the first argument                  *
+*  Macro _Get_FA sets preprocessor variables: _For_i -iterator;       *
+*  _For_m - from value; _For_f -- finish value; _For_s - step.        *
+*                                                                     *
+***********************************************************************
+
+\IFNSET(__SECTIONS__)
+   \SET(__SECTIONS__)()
+   \keepfile
+
+   \IFNDEF(_EE_program)
+      \DEF(_EE_program)
+         \goto(_EndSelect)
+         \IFSET(_SectLabs)
+            \label(_MasterSelect)\modesave()\-
+            \if not exist"__dcount"then\export(__dcount,0)\endif
+            \FOR(__CSect)(\GET(_SectLabs))
+                \POP(_SectLabs)(_tmpSl)
+                \POP(_SectCond)(_tmpSc)
+                \SCAN(
+                   \if ( "\exist(\GET(_tmpSl))" ne "true" ) and
+                       ( (\GET(_tmpSc))) then
+                )
+                  \moderestore()\goto(\__CSect())
+                \endif
+            \ENDFOR
+            \moderestore()
+         \ENDIF
+         \label(_EndSelect)
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_Get_SC)
+     \DEF(_Get_SC)
+        \PUSHQ(_SectCond)(\#(1))
+     \ENDDEF
+   \ENDIF
+
+   \IFNDEF(section)
+     \DEF(section)\goto(_MasterSelect)
+        \ADD(_SectCount)(1)
+        \FOR(_i)(\*)\PUSHQ(_tmp_arg)(\_i())\ENDFOR
+        \_Get_SC(\GET(_tmp_arg))
+        \UNSET(_tmp_arg)
+        \PUSHQ(_SectLabs)(_SL\GET(_SectCount))
+        \label(_SL\GET(_SectCount))
+        \let(_SL\GET(_SectCount),)
+     \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_Get_FA)
+      \DEF(_Get_FA)
+         \SET(_For_i)(\#(2))
+         \SET(_For_m)(\#(3))
+         \SET(_For_f)(\#(4))
+         \SET(_For_s)(\#(5))
+         \IFEQ(_For_s)()
+              \SET(_For_s)(1)
+         \ENDIF
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_foreach)
+      \DEF(_B_foreach)\modesave()\-
+        \UNSET(_tmp_FA)
+        \FOR(_i)(\*)\PUSHQ(_tmp_FA)(\_i())\ENDFOR
+        \_Get_FA(\GET(_tmp_FA))
+         \IFEQ(_For_i)()
+            \ERROR(\(Begin:foreach:iterator undefined!))
+         \ENDIF
+         \IFEQ(_For_m)()
+            \ERROR(\(Begin:foreach: initial value undefined!))
+         \ENDIF
+         \IFEQ(_For_f)()
+            \ERROR(\(Begin:foreach: last value undefined!))
+         \ENDIF
+         \ADD(_For_Count)(1)
+         \SET(_\GET(_For_Count)_For_i)(\GET(_For_i))
+         \DEF(\GET(_\GET(_For_Count)_For_i))\get(\GET(_\GET(_For_Count)_For_i))\ENDDEF
+         \SCAN(\if "\exist(\GET(_For_i))" eq "true" then)
+         \let(_\GET(_For_Count)_For,\get(\GET(_For_i)))
+         \endif
+         \PUSH(_Begin)(\GET(_For_i))
+         \PUSH(_Begin)(\GET(_For_s))
+         \let(\GET(_For_i),\GET(_For_m))
+         \let(_For_tmp,\numcmp(\GET(_For_f),\GET(_For_m)))
+         \if "\get(_For_tmp)" eq "=" then
+            \let(_For_tmp,\numcmp(\GET(_For_s),0))
+         \elif "\get(_For_tmp)" eq ">" then
+            \SCAN(\if "\numcmp(\GET(_For_s),0)" eq "<" then)
+                 \let(_For_tmp,<)
+            \endif
+         \elif "\get(_For_tmp)" eq "<" then
+            \SCAN(\if "\numcmp(\GET(_For_s),0)" eq ">" then)
+                 \let(_For_tmp,>)
+            \endif
+         \endif
+         \SCAN(\while "\numcmp(\get(\GET(_For_i)),\GET(_For_f))"
+          ne "\get(_For_tmp)" do)
+         \UNSET(_For_i)
+         \UNSET(_For_m)
+         \UNSET(_For_f)
+         \UNSET(_For_s)
+      \moderestore()\ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_foreach)
+      \DEF(_E_foreach)\modesave()\-
+         \POP(_Begin)(_For_s)\POP(_Begin)(_For_i)
+         \UNDEF(\GET(_For_i))
+         \UNSET(_\GET(_For_Count)_For_i)
+         \ADD(_For_Count)(-1)
+         \inc(\GET(_For_i),\GET(_For_s))\loop
+         \SCAN(\if "\exist(_\GET(_For_Count)_For)" eq "true" then)
+         \let(\get(\GET(_For_i)),\GET(_For_Count)_For)
+         \else\killvar(\GET(_For_i))\endif
+         \if "\exist(_For_tmp)" eq "true" then\killvar(_For_tmp)\endif
+         \UNSET(_For_i)
+         \UNSET(_For_s)
+      \moderestore()\ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_special)
+     \DEF(_B_special)
+        \SCAN(\if\( )\#(2)then)
+     \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_special)
+     \DEF(_E_special)
+       \endif
+     \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_initialization)
+     \DEF(_B_initialization)\modesave()\-
+         \IFNDEF(counter)
+           \DEF(counter)\import(__dcount)\ENDDEF
+         \ENDIF
+         \if not exist "__dcount" then\export(__dcount,0)\endif
+         \if "\import(__dcount)" eq "0" then
+            \export(__dcount,\sum(\import(__dcount),1))
+            \SET(_tmp__i)()
+            \FOR(_i)(\*)
+               \IFNSET(_tmp__i)
+                  \loadtable(\_i(),\( ))
+               \ELSE
+                  \UNSET(_tmp__i)
+               \ENDIF
+            \ENDFOR
+            \IFDEF(_BB_init)\_BB_init()\ENDIF
+     \moderestore()\ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_initialization)
+     \DEF(_E_initialization)
+        \modesave()\-\else
+          \IFDEF(_EE_init)\_EE_init()\ENDIF
+          \export(__dcount,\sum(\import(__dcount),1))
+         \endif
+        \moderestore()\ENDDEF
+   \ENDIF
+
+   \include(basis.tml)
+   \SET(_MainStyle)(sections.tml)
+\ENDIF

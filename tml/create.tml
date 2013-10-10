@@ -1,0 +1,1972 @@
+\SET(_MINVERSION)(2.29)
+
+***********************************************************************
+
+***********************************************************************
+
+\IFNSET(__CREATE__)
+   \keepfile
+   \SET(__CREATE__)()
+   \MINVERSION(\GET(_MINVERSION))
+   \SET(CMDAGRS_NOVAL)(
+       useoldtop\(,)
+       rlm\(,)
+       silent\(,)
+       help
+   )
+* Example: options with values, kinda 'one 1 two 2':
+*   \SET(CMDAGRS_WITHVAL)(
+*       one\(,)
+*       two
+*   )
+
+   \IFNSET(_NO_TABLES)
+       \SET(_NO_TABLES)(NO)
+       \IFNSET(_NO_ITABLES)\SET(_NO_ITABLES)(YES)\ENDIF
+       \IFNSET(_NO_FTABLES)\SET(_NO_FTABLES)(NO)\ENDIF
+   \ENDIF
+   \IFNSET(_NO_EDIT_INTERNAL)\SET(_NO_EDIT_INTERNAL)(YES)\ENDIF
+   \IFNSET(_NO_TABLE_MOMENTA)\SET(_NO_TABLE_MOMENTA)(YES)\ENDIF
+   \IFNDEF(_B_topology)
+      \DEF(_B_topology)
+         \onleadingspaces\onblanklines\NEWCOMMENT(`)
+         \IFNSET(_WAS_TML)
+             \setout(\GET(_topologyfile))\-
+         \ELSE
+             \appendout\GET(_topologyfile))\-
+         \ENDIF
+         \SET(_tmp_md)()
+         \FOR(_i_md)(\*)
+             \IFSET(_tmp_md)
+                \UNSET(_tmp_md)
+             \ELSE
+                \+\include(\_i_md())\-
+             \ENDIF
+         \ENDFOR
+      \+\ENDDEF
+   \ENDIF
+   \IFNDEF(_E_topology)
+      \DEF(_E_topology)\setout(null)
+        \NEWCOMMENT(*)
+      \ENDDEF
+   \ENDIF
+   \IFNDEF(_B_tmlprogram)
+      \DEF(_B_tmlprogram)\-
+         \IFNSET(_WAS_MODEL)
+           \ERROR(\(Model must be described before tmlprogram!))
+         \ENDIF
+         \IFSET(_tml_PRES)
+            \ERROR(\(Nested TML programs not allowed!))
+         \ELSE
+            \SET(_tml_PRES)()
+         \ENDIF
+         \onleadingspaces\onblanklines\NEWCOMMENT(`)
+         \IFNSET(_WAS_TML)
+             \setout(\GET(_ghostfile))
+         \ELSE
+             \appendout\GET(_ghostfile))
+         \ENDIF
+         \SET(_tmp_md)(\#(2))
+         \IFEQ(_tmp_md)()
+            \SET(_tml_NEED_EP)()
+            \+\\@\begin translate
+            @@\ \-
+         \ELSE
+            \SET(_tmp_md)(0)
+            \FOR(_i_md)(\*)
+                \ADD(_tmp_md)(1)
+                \IFNEQ(_tmp_md)(1)                
+                   \IFEQ(_tmp_md)(2)
+                      \+\\@ 
+\openlanguage(@_i_md())
+                      @@\ \-
+                   \ELSE
+                      \+\\@ @include(@_i_md()) @@\ \-
+                   \ENDIF
+                \ENDIF
+            \ENDFOR
+            \UNSET(_tmp_md)
+         \ENDIF\+
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_tmlprogram)
+      \DEF(_E_tmlprogram)
+         \UNSET(_tml_PRES)
+         \setout(null)
+         \NEWCOMMENT(*)
+         \SET(_WAS_TML)()
+      \ENDDEF
+   \ENDIF
+   \IFNDEF(indices)
+      \DEF(indices)
+         \IFNSET(_ind_group_n)
+            \SET(_ind_group_n)(1)
+            \SET(_N_ind_group1)(ind)
+            \PUSHQ(_ind_group)(ind)
+         \ENDIF
+         \IFSET(indices_ind)
+            \ERROR(\(Only one 'indices' ('indices_ind') is allowed!))
+         \ENDIF
+         \SET(_II)(\#(1))
+         \IFEQ(_II)()
+            \ERROR(\#(0)\(: invalid argument))
+         \ENDIF
+         \UNSET(_II)
+         \SET(_cI)(0)
+         \FOR(_II)(\*)
+             \ADD(_cI)(1)
+             \export(indices_ind_\GET(_cI),\_II())
+         \ENDFOR
+         \SET(indices_ind)()               
+      \ENDDEF
+   \ENDIF
+   \IFNDEF(indicesgroup)
+      \DEF(indicesgroup)
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(indices: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \FOR(__I)(\*)
+            \ADD(_ind_group_n)(1)
+            \SET(_N_ind_group\GET(_ind_group_n))(\__I())
+            \IFDEF(indices_\__I())
+               \ERROR(\(Double defuned indices group )\__I())
+            \ELSE
+               \DEF(indices_\__I())
+                 \IFSET(\#(0))
+                   \ERROR(\(Only one )\#(0)\(' is allowed!))
+                 \ENDIF
+                 \SET(_II)(\#(1))
+                 \IFEQ(_II)()
+                   \ERROR(\#(0)\(: invalid argument))
+                 \ENDIF
+                 \UNSET(_II)
+                 \SET(_cI)(0)
+                 \FOR(_II)(\*)
+                    \ADD(_cI)(1)
+                    \export(\#(0)_\GET(_cI),\_II())
+                 \ENDFOR
+                 \SET(\#(0))()               
+               \ENDDEF
+            \ENDIF
+            \PUSHQ(_ind_group)(\__I())
+         \ENDFOR
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(onlyvertex)
+      \DEF(onlyvertex)
+         \IFNSET(_WAS_MODEL)
+            \ERROR(\(Model must be described before 'onlyvertex'!))
+         \ENDIF
+         \IFSET(_onlyvertex)
+            \ERROR(\(Only one 'onlyvvertex' is allowed!))
+         \ENDIF
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(onlyvertex: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \SET(_cI)(0)
+         \FOR(__I)(\*)
+            \ADD(_cI)(1)
+            \SCAN(\if "\howmany(;,\__I())" eq "0" then)
+               \SCAN(\if\( ) not\( ) exist "_Ty_\__I()" then)
+                  \runerror(\(Undefined )'\__I()'.)
+               \endif
+            \else
+               \SCAN(\if "\howmany(;,\__I())" ne "1" then)
+                  \runerror(\(Synthax error in )'\__I()'.)
+               \endif
+               \let(_pos,\pos(;,\__I()))
+               \SCAN(\if\( ) not\( ) exist "_Ty_\copy(\__I(),0,\get(_pos))" then)
+                  \runerror(\(Undefined )'\__I()'.)
+               \endif
+               \inc(_pos,1)
+               \SCAN(\if\( )not\( )exist"_Ty_\copy(\__I(),\get(_pos),\len(\__I()))"
+                    then)
+                  \runerror(\(Undefined )'\__I()'.)
+               \endif
+            \endif
+            \export(_OnV_\GET(_cI),\__I())
+         \ENDFOR
+         \SET(_onlyvertex)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(excludevertex)
+      \DEF(excludevertex)
+         \IFNSET(_WAS_MODEL)
+            \ERROR(\(Model must be described before 'excludevertex'!))
+         \ENDIF
+         \IFSET(_excludevertex)
+            \ERROR(\(Only one 'excludevvertex' is allowed!))
+         \ENDIF
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(excludevertex: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \SET(_cI)(0)
+         \FOR(__I)(\*)
+            \ADD(_cI)(1)
+            \SCAN(\if "\howmany(;,\__I())" eq "0" then)
+               \SCAN(\if\( )not\( )exist "_Ty_\__I()" then)
+                  \runerror(\(Undefined )'\__I()'.)
+               \endif
+            \else
+               \SCAN(\if "\howmany(;,\__I())" ne "1" then)
+                  \runerror(\(Synthax error in )'\__I()'.)
+               \endif
+               \let(_pos,\pos(;,\__I()))
+               \SCAN(\if\( )not\( )exist "_Ty_\copy(\__I(),0,\get(_pos))" then)
+                  \runerror(\(Undefined )'\__I()'.)
+               \endif
+               \inc(_pos,1)
+               \SCAN(\if\( )not\( )exist "_Ty_\copy(\__I(),\get(_pos),\len(\__I()))" then)
+                  \runerror(\(Undefined )'\__I()'.)
+               \endif
+            \endif
+            \export(_ExV_\GET(_cI),\__I())
+         \ENDFOR
+         \SET(_excludevertex)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(includevertex)
+      \DEF(includevertex)
+         \IFNSET(_WAS_MODEL)
+            \ERROR(\(Model must be described before 'includevertex'!))
+         \ENDIF
+         \IFSET(_includevertex)
+            \ERROR(\(Only one 'includevvertex' is allowed!))
+         \ENDIF
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(includevertex: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \SET(_cI)(0)
+         \FOR(__I)(\*)
+            \ADD(_cI)(1)
+            \SCAN(\if "\howmany(;,\__I())" eq "0" then)
+               \SCAN(\if\( )not\( )exist "_Ty_\__I()" then)
+                  \runerror(\(Undefined )'\__I()'.)
+               \endif
+            \else
+               \SCAN(\if "\howmany(;,\__I())" ne "1" then)
+                  \runerror(\(Synthax error in '\__I()'.))
+               \endif
+               \let(_pos,\pos(;,\__I()))
+               \SCAN(\if\( )not\( )exist "_Ty_\copy(\__I(),0,\get(_pos))" then)
+                  \runerror(\(Undefined )'\__I()'.)
+               \endif
+               \inc(_pos,1)
+               \SCAN(\if\( )not\( )exist "_Ty_\copy(\__I(),\get(_pos),\len(\__I()))" 
+                     then)
+                  \runerror(\(Undefined )'\__I()'.)
+               \endif
+            \endif
+            \export(_InV_\GET(_cI),\__I())
+         \ENDFOR
+         \SET(_includevertex)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(onlyparticle)
+      \DEF(onlyparticle)
+         \IFNSET(_WAS_MODEL)
+            \ERROR(\(Model must be described before 'onlyparticle'!))
+         \ENDIF
+         \IFSET(_onlyparticle)
+            \ERROR(\(Only one 'onlyparticle' is allowed!))
+         \ENDIF
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(onlyparticle: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \SET(_cI)(0)
+         \FOR(__I)(\*)
+            \ADD(_cI)(1)
+            \SCAN(\if\( )not\( )exist "_Ty_\__I()" then)
+              \runerror(\(Undefined )'\__I()'.)
+            \endif
+            \export(_OnP_\GET(_cI),\__I())
+         \ENDFOR
+         \SET(_onlyparticle)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(excludeparticle)
+      \DEF(excludeparticle)
+         \IFNSET(_WAS_MODEL)
+            \ERROR(\(Model must be described before 'excludeparticle'!))
+         \ENDIF
+         \IFSET(_excludeparticle)
+            \ERROR(\(Only one 'excludeparticle' is allowed!))
+         \ENDIF
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(excludeparticle: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \SET(_cI)(0)
+         \FOR(__I)(\*)
+            \ADD(_cI)(1)
+            \SCAN(\if\( )not\( )exist "_Ty_\__I()" then)
+              \runerror(\(Undefined )'\__I()'.)
+            \endif
+            \export(_ExP_\GET(_cI),\__I())
+         \ENDFOR
+         \SET(_excludeparticle)()
+      \ENDDEF
+   \ENDIF
+
+
+   \IFNDEF(includeparticle)
+      \DEF(includeparticle)
+         \IFNSET(_WAS_MODEL)
+            \ERROR(\(Model must be described before 'includeparticle'!))
+         \ENDIF
+         \IFSET(_includeparticle)
+            \ERROR(\(Only one 'includeparticle' is allowed!))
+         \ENDIF
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(includeparticle: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \SET(_cI)(0)
+         \FOR(__I)(\*)
+            \ADD(_cI)(1)
+            \SCAN(\if\( )not\( )exist "_Ty_\__I()" then)
+              \runerror(\(Undefined )'\__I()'.)
+            \endif
+            \export(_InP_\GET(_cI),\__I())
+         \ENDFOR
+         \SET(_includeparticle)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(vectors)
+      \DEF(vectors)
+         \IFSET(_vector)
+            \ERROR(\(Only one 'vectors' is allowed!))
+         \ENDIF
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(vectors: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \SET(_cI)(0)
+         \FOR(__I)(\*)
+            \ADD(_cI)(1)
+            \export(_VeC_\GET(_cI),\__I())
+         \ENDFOR
+         \SET(_vector)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(loopmomenta)
+      \DEF(loopmomenta)
+         \IFSET(_loopmomenta)
+            \ERROR(\(Only one 'loopmomenta' is allowed!))
+         \ENDIF
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(loopmomenta: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \SET(_cI)(0)
+         \FOR(__I)(\*)
+            \ADD(_cI)(1)
+            \export(_Lm_\GET(_cI),\__I())
+         \ENDFOR
+         \SET(_loopmomenta)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(zeromomentum)
+      \DEF(zeromomentum)
+         \IFSET(_zeromomentum)
+            \ERROR(\(Only one 'zeromomentum' is allowed!))
+         \ENDIF
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(zeromomentum: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \SET(_cI)(0)
+         \FOR(__I)(\*)
+            \ADD(_cI)(1)
+            \export(_ZeroM,\__I())
+         \ENDFOR
+         \IFNEQ(_cI)(1)
+            \ERROR(\(zeromomentum: only one vector is allowed!))
+         \ENDIF
+         \SET(_zeromomentum)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(token)
+      \DEF(token)
+         \SET(_tNam)(\#(3))
+         \IFNEQ(_tNam)()
+            \ERROR(\(token: invalid argument))
+         \ENDIF         
+         \SET(_tNam)(\#(1))
+         \IFEQ(_tNam)()
+            \ERROR(\(token: invalid argument))
+         \ENDIF
+         \SET(_tVal)(\#(2))
+         \IFEQ(_tVal)()
+            \ERROR(\(token: invalid argument))
+         \ENDIF         
+         \IFNSET(_tokenC)
+            \SET(_tokenC)(0)
+         \ENDIF
+         \ADD(_tokenC)(1)
+         \export(_token\GET(_tokenC),\GET(_tNam)="\GET(_tVal)")
+         \UNSET(_tNam)
+         \UNSET(_tVal)
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(tables)
+      \DEF(tables)
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(tables: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \IFNSET(_tt_I)
+            \SET(_tt_I)(0)
+         \ENDIF
+         \FOR(__I)(\*)
+            \ADD(_tt_I)(1)
+            \export(_tt_I_\GET(_tt_I),\(table ")\__I()) 
+         \ENDFOR
+      \ENDDEF
+   \ENDIF
+   \IFNDEF(shapetables)
+      \DEF(shapetables)
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(shapetables: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \IFNSET(_tt_I)
+            \SET(_tt_I)(0)
+         \ENDIF
+         \FOR(__I)(\*)
+            \ADD(_tt_I)(1)
+            \export(_tt_I_\GET(_tt_I),\(shapetable ")\__I()) 
+         \ENDFOR
+      \ENDDEF
+   \ENDIF
+   \IFNDEF(momentatables)
+      \DEF(momentatables)
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(momentatables: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \IFNSET(_tt_I)
+            \SET(_tt_I)(0)
+         \ENDIF
+         \FOR(__I)(\*)
+            \ADD(_tt_I)(1)
+            \export(_tt_I_\GET(_tt_I),\(momentatable ")\__I()) 
+         \ENDFOR
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(externalcoordinates)
+      \DEF(externalcoordinates)
+         \IFSET(_extcoord)
+            \ERROR(\(Only one 'externalcoordinates' is allowed!))
+         \ENDIF
+         \SET(__I)(\#(1))
+         \IFEQ(__I)()
+            \ERROR(\(externalcoordinates: invalid argument))
+         \ENDIF
+         \UNSET(__I)
+         \SET(_cEC)(0)
+         \FOR(__I)(\*)
+            \ADD(_cEC)(1)
+            \export(_ExC_\GET(_cEC),\__I())
+         \ENDFOR
+         \SET(_extcoord)()
+      \ENDDEF
+   \ENDIF
+
+
+   \IFNSET(_processname)
+      \READ(_processname)(\(Process name? ))
+   \ENDIF
+
+   \IFNSET(_bosonfile)
+      \SET(_bosonfile)(_bos_tmp.\GET(_processname))
+   \ENDIF
+   \IFNSET(_fermionfile)
+      \SET(_fermionfile)(_fer_tmp.\GET(_processname))
+   \ENDIF
+   \IFNSET(_ghostfile)
+      \SET(_ghostfile)(_gst_tmp.\GET(_processname))
+   \ENDIF
+   \IFNSET(_vertexfile)
+      \SET(_vertexfile)(_ver_tmp.\GET(_processname))
+   \ENDIF
+   \IFNSET(_modelfile)
+     \SET(_modelfile)(_model.\GET(_processname))
+   \ENDIF
+   \IFNSET(_tmplog)
+     \SET(_tmplog)(_log.\GET(_processname))
+   \ENDIF
+   \IFNSET(_qgrafmfile)
+     \SET(_qgrafmfile)(_qgrafm.\GET(_processname))
+   \ENDIF
+   \IFNSET(_qlistfile)
+     \SET(_qlistfile)(qlist.\GET(_processname))
+   \ENDIF
+   \IFNSET(_settingsfile)
+     \SET(_settingsfile)(settings.\GET(_processname))
+   \ENDIF
+   \IFNSET(_topologyfile)
+     \SET(_topologyfile)(_topol.\GET(_processname))
+   \ENDIF
+   \IFNSET(_configfile)
+     \SET(_configfile)(config.\GET(_processname))
+   \ENDIF
+
+  \IFNSET(NUMBEROFFUNCTIONS)\SET(NUMBEROFFUNCTIONS)(10)\ENDIF
+  \IFNSET(NUMBEROFCOMMUTING)\SET(NUMBEROFCOMMUTING)(10)\ENDIF
+  \IFNSET(NUMBEROFVECTORS)\SET(NUMBEROFVECTORS)(10)\ENDIF
+  \IFNSET(NUMBEROFTOPOLOGIES)\SET(NUMBEROFTOPOLOGIES)(20)\ENDIF
+  \IFNSET(NUMBEROFPROTOTYPES)\SET(NUMBEROFPROTOTYPES)(200)\ENDIF
+  \IFNSET(NUMBEROFID)\SET(NUMBEROFID)(30)\ENDIF
+  \IFNSET(NUMBEROFVARIABLES)\SET(NUMBEROFVARIABLES)(30)\ENDIF
+  \IFNSET(NUMBEROFEXPORTS)\SET(NUMBEROFEXPORTS)(1000)\ENDIF
+
+  \IFNDEF(_SETMACRO)
+     \DEF(_SETMACRO)\\@
+         \function _extsett;
+\setout(@GET(_settingsfile))\offblanklines\offleadingspaces\+
+         * This file is automatically generated by DIANA \version()
+         * for the process @GET(_processname).
+         \sysinfo()
+         *Identifier for indices substitutions:
+         @IFNSET(_ind_group_n)
+             @ERROR(Indices?!)
+         @ENDIF
+         @IFEQ(_ind_group_n)(1)
+         index = @GET(_ind_group)
+         @ELSE
+         index:@GET(_ind_group_n)=@GET(_ind_group)
+         @ENDIF
+         *Identifier for momenta substitutions:
+         momentum = vec
+         *Identifier for numbers of vertex/lines substitutions:
+         counter vertex or line = lnum
+         *Identifier for marks of vertex/lines substitutions:
+         lvmark = num
+         *Identifier for fermion line numbers substitution:
+         counter fermion line = fnum
+         *Identifier for number of vertex which is begin of line:
+         from vertex = from
+         *Identifier for number of vertex which is end of line:
+         to vertex = to
+         input file = "@GET(_qlistfile)"
+         @IFNEQ(_syspath)()
+         system path ="@GET(_syspath)"
+         @ENDIF
+         @IFSET(foldername)SET foldername = "@GET(foldername)"@ENDIF
+
+         fermion direction = ap
+
+         * Following lines are optional:
+         number of functions = @GET(NUMBEROFFUNCTIONS)
+         number of commuting = @GET(NUMBEROFCOMMUTING)
+         
+         number of vectors = @GET(NUMBEROFVECTORS)
+         number of topologies = @GET(NUMBEROFTOPOLOGIES)
+         number of prototypes = @GET(NUMBEROFPROTOTYPES)
+         number of id = @GET(NUMBEROFID)
+         number of variables = @GET(NUMBEROFVARIABLES)
+         number of exports = @GET(NUMBEROFEXPORTS)
+
+         number of external lines = \import(_legs)
+         \-@FOR(_iI)(@GET(_ind_group))\let(_i,1)\export(__strlen,0)
+         \+\formatstr(indices:@_iI()\( ))\formatstr(
+         \import(indices_@_iI()_\get(_i)))\while
+         exist "indices_@_iI()_\inc(_i,1)"
+         do\formatstr(\(,)\import(indices_@_iI()_\get(_i)))\loop;
+         \-
+         @ENDFOR
+         \if exist "_mLine1" then
+            \let(_i,0)
+            \+ vectors 
+            \while exist "_mLine\inc(_i,1)" do
+               \import(_mLine\get(_i))\loop;
+         \else
+            \let(_i,1)\export(__strlen,0)\+
+            \formatstr(vectors) \formatstr(\import(_VeC_\get(_i)))\while 
+            exist "_VeC_\inc(_i,1)"
+            do\formatstr(\(,)\import(_VeC_\get(_i)))\loop;
+            \if  exist "_Lm_1" then\-
+               \let(_i,1)\export(__strlen,0)\+
+               \formatstr(loop\( )momenta\( )=) \formatstr(\import(_Lm_\get(_i)))\while
+               exist "_Lm_\inc(_i,1)"
+               do\formatstr(\(,)\import(_Lm_\get(_i)))\loop;
+            \endif 
+            \-\let(_i,0)\+
+            \while  exist "_extToken\inc(_i,1)" do
+              token ext\get(_i) = "\import(_extToken\get(_i))"
+            \loop
+            \-\let(_i,0)\+
+            \while exist "_token\inc(_i,1)" do
+               token \import(_token\get(_i))
+            \loop
+         \endif
+         \if  exist "_ZeroM" then 
+            zero momentum = \import(_ZeroM);
+         \else
+            vectors z;
+            zero momentum = z;
+         \endif
+
+         \onleadingspaces\include(@GET(_topologyfile))\offleadingspaces\eol()
+         \-\let(_i,1)\export(default,)\export(__strlen,0)\+
+         \formatstr(functions) \formatstr(\import(_Functions\get(_i)))\while 
+          exist "_Functions\inc(_i,1)"
+          do\formatstr(\(,)\import(_Functions\get(_i)))\loop;
+
+         \-\let(_i,1)\export(__strlen,0)\+
+         \formatstr(commuting) \formatstr(\import(_Commuting\get(_i)))\while 
+         exist "_Commuting\inc(_i,1)"
+         do\formatstr(\(,)\import(_Commuting\get(_i)))\loop;
+
+         \NEWCOMMENT(`)
+         \include(@GET(_modelfile))
+         \NEWCOMMENT(*)
+         ingoing \import(_ingoing)
+         outgoing \import(_outgoing)
+
+         \setout(null)\offblanklines
+         \end @@\
+     \ENDDEF
+  \ENDIF
+  \IFNDEF(_checkonefile)
+     \DEF(_checkonefile)
+           \SCAN(\if "\open(\#(1))" eq "ok" then)
+                \open(null)
+                \if "\get(_existingfiles)" ne "" then
+                   \let(_existingfiles,\get(_existingfiles)\(,))
+                \endif
+                \let(_existingfiles,\get(_existingfiles)\#(1))
+             \endif        
+     \ENDDEF
+  \ENDIF
+  \IFNDEF(_checkfiles)
+     \DEF(_checkfiles)
+        \let(_existingfiles,)
+        \FOR(_i)(\*)
+          \_checkonefile(\_i())
+        \ENDFOR
+        \if "\get(_existingfiles)" ne "" then
+          \message(Files)
+          \message(\get(_existingfiles))
+          \if"\ask(\(will be deleted. )Ok?(Y/N))" eq "N" then
+              \message(Ok.)\exit(0)
+          \endif
+        \endif
+        \killvar(_existingfiles)
+        \FOR(_i)(\*)
+          \setout(\_i())
+        \ENDFOR
+        \setout(null)
+     \ENDDEF
+  \ENDIF
+  \IFNDEF(_BB_program)
+      \DEF(_BB_program)
+        \let(default,)
+        \IFSET(_TOPOLOGYEDITORNAME)
+           \if "\getenv(DISPLAY)" eq "" then
+               \message()
+               \message(*** WARNING! ***)
+               \message(\(To use the Topology Editor )"\GET(_TOPOLOGYEDITORNAME)")
+               \message(\(you must run the program under X-window!))
+               \if"\ask(Continue?(Y/N))" eq "N" then
+                  \message(Ok.)\exit(0)
+               \endif
+           \endif
+        \ENDIF
+
+        \SET(_c)(0)
+        \FOR(_i)(\ARGC)
+           \ADD(_c)(1)
+           \SET(_arg)(\CMDLINE(\GET(_c)))
+           \FOR(_j)(\GET(CMDAGRS_WITHVAL))
+              \IFEQ(_arg)(\_j())
+                 \ADD(_c)(1)
+                 \SET(\_j())(\CMDLINE(\GET(_c)))
+              \ENDIF
+           \ENDFOR
+        \ENDFOR   
+
+        \SET(_c)(0)
+        \FOR(_i)(\ARGC)
+           \ADD(_c)(1)
+           \SET(_arg)(\CMDLINE(\GET(_c)))
+           \FOR(_j)(\GET(CMDAGRS_NOVAL))
+              \IFEQ(_arg)(\_j())
+                 \SET(\_j())()
+              \ENDIF
+           \ENDFOR
+        \ENDFOR
+        
+        \IFSET(help)
+           \MESSAGE(\(This is "create" style.))
+           \MESSAGE(\(Minimal DIANA version required is )\GET(_MINVERSION))
+           \MESSAGE(\(Command line option:))
+           \MESSAGE(\(    rlm - read old loop marks, if present)) 
+           \MESSAGE(\(    useoldtop - use old topologies, if present)) 
+           \MESSAGE(\(    silent - do not ask questions)) 
+           \MESSAGE(\(    help - this help)) 
+           \MESSAGE(\(      All these options can be set permanently from the user create))
+           \MESSAGE(\(    file via SET instruction, e.g. SET rlm = rlm))
+           \ERROR(\(No errors))
+        \ENDIF
+        \PUSHQ(_FILELIST)(\GET(_bosonfile))
+        \PUSHQ(_FILELIST)(\GET(_fermionfile))
+        \PUSHQ(_FILELIST)(\GET(_ghostfile))
+        \PUSHQ(_FILELIST)(\GET(_vertexfile))
+        \PUSHQ(_FILELIST)(\GET(_modelfile))
+        \PUSHQ(_FILELIST)(\GET(_qgrafmfile))
+        \PUSHQ(_FILELIST)(\GET(_topologyfile))
+        \PUSHQ(_FILELIST)(\GET(_tmplog))
+        \PUSHQ(_FILELIST)(\GET(_configfile))
+        \IFNEQ(keepqgraf)(TRUE)
+           \PUSHQ(_FILELIST)(\GET(_qlistfile))
+        \ENDIF
+        \PUSHQ(_FILELIST)(\GET(_settingsfile))
+        \PUSHQ(_FILELIST)(qgraf.dat)
+        \-\_checkfiles(\GET(_FILELIST))
+        \UNSET(_FILELIST)        
+        \onleadingspaces\onblanklines\ontailspaces
+     \ENDDEF
+  \ENDIF
+   \IFNDEF(_EE_program)
+      \DEF(_EE_program)
+         \IFNSET(_WAS_MODEL)
+            \ERROR(\(Model must be described!))
+         \ENDIF
+         \IFNSET(_WAS_PROCESS)
+            \ERROR(\(Process must be described!))
+         \ENDIF
+         \IFNSET(_ind_group)
+            \ERROR(\(Indices group must be described!))
+         \ENDIF         
+         \FOR(_iI)(\GET(_ind_group))
+         \IFNSET(indices_\_iI())
+            \ERROR(indices_\_iI()\( must be described!))
+         \ENDIF
+         \ENDFOR
+         \IFNSET(_vector)
+            \ERROR(\(Vectors must be described!))
+         \ENDIF
+         \IFNSET(_WAS_TML)
+            \ERROR(\(tml-progam must be described!))
+         \ENDIF
+         \IFNEQ(keepqgraf)(TRUE)
+         \IFNSET(_WAS_OPTIONS)
+            \appendout(qgraf.dat)\+
+            options = ;
+            \setout(null)
+         \ENDIF
+         \removefile(\GET(_qlistfile))
+         \message(\(Trying to start qgraf...))
+         \system(\get(_qgrafname))
+         \ENDIF
+         \SCAN(\if "\open(\GET(_qlistfile))" ne "ok" then)
+           \message(\(Something wrong, qgraf has not generated file!))
+           \message(**** Exit ****)
+           \exit(1)
+         \else
+            \open(null)
+            \message(\(Ok, qgraf has generated the file )'\GET(_qlistfile)'.)
+         \endif
+
+         \if "\import(_qout)" eq ";" then 
+           \export(_outlines,0)
+        \else
+           \NEWCOMMA(;)
+           \export(_outlines;\sum(\howmany(,;\import(_qout));1))
+           \NEWCOMMA(,)
+        \endif
+
+         \setout(\GET(_vertexfile))\offblanklines\offleadingspaces\+
+         \\@
+         \include(@GET(_settingsfile))
+         forced execute
+         extra call
+         debug off
+         log file = @GET(_tmplog)
+         @IFSET(_tt_I)@-
+           @let(_i,0)
+           @while exist "_tt_I_@inc(_i,1)" do
+              @+topology @import(_tt_I_@get(_i))"@eol()@-
+           @loop 
+           @+         
+         @ENDIF
+
+         @IFSET(_cEC)
+          external coordinates ev = "@-
+           @let(_i,0)
+           @while exist "_ExC_@inc(_i,1)" do
+              @if "@get(_i)" ne "1" then
+                @+,@-
+              @endif
+              @+@import(_ExC_@get(_i))@-
+           @loop 
+           @+"
+         @ENDIF
+         
+	 @IFSET(CHORD)
+           chord @GET(CHORD);
+         @ENDIF
+	 @IFSET(BRIDGE)
+           bridge @GET(BRIDGE);
+         @ENDIF
+         @IFEQ(_NO_TABLE_MOMENTA)(YES)
+            ignore table momenta enable
+         @ELSE
+            ignore table momenta disable
+         @ENDIF
+         @IFNEQ(_NO_TABLES)(YES)
+            @IFNEQ(_NO_FTABLES)(YES)
+            topology table "ftop@import(_loops)_@import(_legs)_@import(_outlines)_@import(_onepi).top"
+            topology table "ftop@import(_loops)_@import(_legs)_@import(_outlines).top"
+            topology table "ftopBase.top"
+            @ELSE
+               @IFEQ(_NO_ITABLES)(YES)
+                 topology table "topEmpty.top"
+               @ENDIF
+            @ENDIF
+            @IFNEQ(_NO_ITABLES)(YES)
+            topology table "itop@import(_loops)_@import(_legs)_@import(_outlines)_@import(_onepi).top"
+            topology table "itop@import(_loops)_@import(_legs)_@import(_outlines).top"
+            topology table "itop@import(_loops)_@import(_legs).top"
+            topology table "itop@import(_loops).top"
+            topology table "itopBase.top"
+            @ENDIF
+         @ELSE
+           @IFNEQ(_NO_EDIT_INTERNAL)(YES)
+              topology table "topEmpty.top"
+           @ENDIF
+         @ENDIF
+
+         \begin translate
+         \function ask message;\modesave()\-
+         \do
+         \let(answ,\read(\get(message)))
+         \if "\get(answ)" eq "Y" then \moderestore()\return(Y)\endif
+         \if "\get(answ)" eq "y" then \moderestore()\return(Y)\endif
+         \if "\get(answ)" eq "N" then \moderestore()\return(N)\endif
+         \if "\get(answ)" eq "n" then \moderestore()\return(N)\endif
+         \message(\(Type y or n!))
+         \while "a" eq "a" loop
+         \end
+                        
+         \program
+         \if "\islast()"eq"false"then
+           \exit(0)
+         \endif
+         @IFNEQ(_NO_EDIT_INTERNAL)(YES)
+         \let(ret,\saveIntTbl(itopWrk@GET(_processname).top))
+         \if "\numcmp(\get(ret),0)" eq "<" then
+             \message(\ttErrorCodes(\get(ret)))
+             \message(\(Fail saveIntTbl **** Exit ****))
+             \exit(-1)
+         \endif
+         \if ("\get(ret)" ne "0") and ("\getenv(DISPLAY)" ne "") then
+            @IFSET(_TOPOLOGYEDITORNAME)         
+*                -ud|-update_default_file
+*                -nl|-no_load_file_dialog
+*                -se|-save_on_exit
+*                -mm|-max_mark_length
+*                -ml|-use_user_mark_for_labeling
+*                -on|-only_numerical_marks
+*                -ea|-empty_marks_allowed 
+*                -ol|-out_lines
+*                -e4|-no_edit_numbers 
+*                -e5|-no_edit_marks
+*                -e6|-no_edit_directions 
+*                -e7|-no_edit_momenta
+*                -os|-output_save_total_number
+*                -it|-init_prompt_text
+*                -fl|-file
+               \system(@GET(_TOPOLOGYEDITORNAME)
+                  \( -ud True )
+                  \( -nl True )
+                  \( -se True )
+                  \( -mm 3 )
+                  \( -ml True )
+                  \( -on True )
+                  \( -ea False )
+                  \( -ol 0 )
+                  \( -e4 True )
+                  \( -e5 True )
+                  \( -e6 True )
+                  \( -e7 True )
+                  \( -os True )
+                  \( -it '_Edit_internal_topologies__' )
+                  \( -fl )itopWrk@GET(_processname).top)
+               )
+            @ENDIF
+            \let(ret,\loadIntTbl(itopWrk@GET(_processname).top))
+            \if "\numcmp(\get(ret),0)" ne ">" then
+                \message(\ttErrorCodes(\get(ret)))
+                \message(\(Fail loadIntTbl **** Exit ****))
+                \exit(-1)
+            \endif
+         \endif
+         @ENDIF
+
+         @IFEQ(_MARK_LOOP)(YES)
+            \let(ret,\expTopLoopMark(@GET(_topologyfile)))
+            \if "\numcmp(\get(ret),0)" ne ">" then
+                \message(\(No automatically distributed momenta))
+            \else
+               @IFSET(_TOPOLOGYEDITORNAME)
+                  \if "\getenv(DISPLAY)" ne "" then
+                      \if "\numcmp(@import(_legs),3)" eq ">" then
+                         \let(_specY,\( -yt 400 ))
+                      \else
+                         \let(_specY,)
+                      \endif
+                     \let(_klm,False)
+                     @IFSET(rlm)
+                        \if "\open(loopmarks@import(_onepi)@import(_loops).@GET(_processname))" eq "ok" then
+                        \open(null) 
+                        \message(\(Old file with marked loop momenta))
+                        \message(loopmarks@import(_onepi)@import(_loops).@GET(_processname))
+                        \message(\(will be used. ))
+                        \if "\ask(Ok?(Y/N))" eq "Y" then
+                           \system(\(cp )loopmarks@import(_onepi)@import(_loops).@GET(_processname)\( ) @GET(_topologyfile))
+                           \let(_klm,True)
+                        \endif
+                        \endif  
+                      @ENDIF 
+                      \message(\(Invoke topology editor, please wait...))
+                      \let(exit,
+                         \system(
+                            @GET(_TOPOLOGYEDITORNAME)
+                            \( -mt )\numberoftopologies()
+                            \( -ud True)
+                            \( -nl True)
+                            \( -se True)
+                            \get(_specY)
+                            \( -mm 3)
+                            \( -ml True)
+                            \( -on True)
+                            \( -ea False)
+                            \( -ol )@import(_outlines)
+                            \( -lo True)
+                            \( -ie 4)
+                            \( -fi True) 
+                            \( -nm  True)
+                            \( -os  True)
+                            \( -km )\get(_klm)
+                            \( -it '_Arrange_loop_momenta_' )
+                            \( -fl )@GET(_topologyfile)
+                         )
+                      )
+                      \if "\get(exit)" ne "0" then
+                         \message(\(Topology editor fails!))
+                      \endif
+                      \system( \(cp )@GET(_topologyfile)\( )loopmarks@import(_onepi)@import(_loops).@GET(_processname))
+                  \endif
+               @ENDIF
+            \endif
+            \let(ret,\loadLoopMarks(@GET(_topologyfile)))
+            \if "\numcmp(\get(ret),0)" ne ">" then
+                \message(\(Can't load loop marks!))
+            \endif
+         @ENDIF
+         \let(ret,\saveTopologies(@GET(_topologyfile)))
+         \if "\numcmp(\get(ret),0)" ne ">" then
+             \message(\(No topologies?!!))
+             \message(\( Fail saveTopologies **** Exit ****))
+             \exit(-1)
+         \endif
+
+         \setout(@GET(_settingsfile))ok
+         \lastdiagramnumber()
+         \numberoftopologies()
+         \wasAbstractMomenta()
+         @if  exist "_ZeroM" then 
+         \if "\isVectorPresent(@import(_ZeroM))" eq "no" then @import(_ZeroM), \endif
+         @endif
+
+         \allVectors()
+         \setout(null)
+         \end translate
+         @@\         
+         \setout(\GET(_bosonfile))\-
+         \message(\(Generating temporary TML program...))
+         \offblanklines\onleadingspaces\+
+         \_SETMACRO()\setout(null)\onleadingspaces
+         \compile(\GET(_bosonfile))
+         \call(_extsett)
+         \message(\(...done. Now trying to build topologies.))
+
+         \IFNSET(_DIANANAME)
+            \if "\let(_diananame,\getenv(DIANANAME))" eq "" then 
+               \message(\(Can't invoke DIANA, set up _DIANANAME! **** Exit ****))
+               \exit(-1)
+            \endif
+         \ELSE
+            \let(_diananame,\GET(_DIANANAME))
+         \ENDIF
+         \system(\get(_diananame)\( -l /dev/null)\( -c )\GET(_vertexfile))
+         \let(_chsk,\open(\GET(_settingsfile)))
+         \if "\get(_chsk)" eq "ok" then
+           \let(_chsk,\readln())
+         \endif
+         \if "\get(_chsk)"ne"ok"then
+           \message(\(Something wrong, DIANA can't generate topologies!))
+           \message(\(See file )\GET(_tmplog).)
+           \message(**** Exit ****)
+           \exit(1)
+         \else
+           \let(_numberofdiagram,\readln())
+           \let(_numberoftopologies,\readln())
+           \let(_keepmomenta,\readln())
+           \let(_i,0)
+           \while "\let(_tmpw,\readln())" ne "\eof()" do
+               \export(_mLine\inc(_i,1),\get(_tmpw))
+           \loop
+           \open(null)
+           \message(\(Ok, topologies are generated.))
+         \endif
+
+         \IFSET(_TOPOLOGYEDITORNAME)
+         \if "\getenv(DISPLAY)" ne "" then
+            \SCAN(\if "\open(\GET(_topologyfile))" ne "ok" then)
+              \message(\(Can't open )\GET(_topologyfile)!)
+              \exit(2)
+            \endif
+            \open(null)
+            \setout(null)
+            \if "\numcmp(\import(_legs),3)" eq ">" then
+               \let(_specY,\( -yt 400 ))
+            \else
+               \let(_specY,)
+            \endif
+            \if "\get(_keepmomenta)" eq "yes" then
+               \let(_keepmomenta,\( -e4 True  -e5 True  -e6 True -e7 True ))
+            \else
+               \let(_keepmomenta,)
+            \endif
+            \let(_fi,True)
+            \IFSET(useoldtop)
+            \SCAN(\if "\open(topologies\import(_onepi)\import(_loops).\GET(_processname))" eq "ok" then)
+               \open(null)
+               \IFSET(silent)
+                 \let(_fi,False)  
+                 \system(\(cp )topologies\import(_onepi)\import(_loops).\GET(_processname)\( ) \GET(_topologyfile))                 
+               \ELSE
+               \message(\(Old file ))
+               \message(topologies\import(_onepi)\import(_loops).\GET(_processname))
+               \message(\(will be used. ))
+               \if "\ask(Ok?(Y/N))" eq "Y" then
+                 \let(_fi,False)  
+                 \system(\(cp )topologies\import(_onepi)\import(_loops).\GET(_processname)\( ) \GET(_topologyfile))
+               \endif
+               \ENDIF
+            \endif
+            \ENDIF
+            \message(\(Invoke topology editor, please wait...))
+            \let(exit,
+            \system(
+               \GET(_TOPOLOGYEDITORNAME)
+               \( -mt )\get(_numberoftopologies)
+               \( -ud True)
+               \( -nl True)
+               \( -se True)
+               \get(_specY)
+               \( -mm 3)
+               \( -ml True)
+               \( -on True)
+               \( -ea False)
+               \( -mn 1)
+               \( -um True)
+               \( -e5  True)
+               \( -ol )\import(_outlines)
+               \get(_keepmomenta)
+               \( -fi )\get(_fi)
+*               \( -core_dump_on_crash True)
+*               \( -save_on_crash False)
+               \( -fl )\GET(_topologyfile)
+            )
+            )
+            \if "\get(exit)" ne "0" then
+               \message(\(Topology editor fails!))
+               \message(**** Exit ****)
+               \exit(4)
+            \endif
+*            Save the result:
+               \system( \(cp )\GET(_topologyfile)\( )topologies\import(_onepi)\import(_loops).\GET(_processname))
+*
+         \endif
+         \ENDIF
+
+         \compile(\GET(_bosonfile))
+         \call(_extsett)
+         \open(\GET(_ghostfile))
+         \IFSET(_WAS_HEADER)
+         \appendout(\GET(_configfile))\offleadingspaces\onblanklines\+
+         \ELSE
+         \setout(\GET(_configfile))\offleadingspaces\onblanklines\+
+         * This file is automatically generated by DIANA \version()
+         * for the process \GET(_processname).
+         \sysinfo()
+
+         \backslash()include(\GET(_settingsfile))
+           
+         *Remove the following line to refuse the protocol file generating:
+         log file = log.\GET(_processname) 
+         * Remove the following line to avoid debug information:
+         debug off
+         * Remove the following line to avoid forsed execution:
+         forced execute
+         \ENDIF
+         \IFDEF(_config_header)\_config_header()\ENDIF
+         \offblanklines\+
+         \_OPV(_OnP_,\(select only particle))
+         \_OPV(_ExP_,\(select exclude particle))
+         \_OPV(_InP_,\(select include particle))
+         \_OPV(_OnV_,\(select only vertex))
+         \_OPV(_ExV_,\(select exclude vertex))
+         \_OPV(_InV_,\(select include vertex))
+*         \onblanklines
+
+
+         \while "\let(_tmpw,\readln())" ne "\eof()" do
+            \onleadingspaces \get(_tmpw)\eol()\offleadingspaces\loop
+         \setout(null)\open(null)
+         \removefile(\GET(_bosonfile))
+         \removefile(\GET(_fermionfile))
+         \removefile(\GET(_ghostfile))
+         \removefile(\GET(_vertexfile))
+         \removefile(\GET(_modelfile))
+         \removefile(\GET(_qgrafmfile))
+         \removefile(\GET(_tmplog))
+         \removefile(qgraf.dat)
+         \removefile(\GET(_topologyfile))
+         \IFDEF(AFTERCREATION)
+            \AFTERCREATION()
+         \ELSE
+         \if "\let(DIANANAMETOUSE,\getenv(DIANANAMETOUSE))" eq "" then 
+            \let(DIANANAMETOUSE,\GET(_DIANANAME))
+         \endif
+         \message()
+         \message()
+         \message(******************************************************)
+         \message(\(See TM-program in the file )\GET(_configfile);)
+         \message(\(topologies and the model in )\GET(_settingsfile);)
+         \message(\(QGRAF output for your process in )\GET(_qlistfile).)
+         \message(\(You may start calculations by the command:))
+         \message(\(   )\get(DIANANAMETOUSE)\( -c )\GET(_configfile))
+         \message(******************************************************)
+         \ENDIF
+      \ENDDEF
+   \ENDIF
+   \IFNDEF(_B_qgrafoptions)
+      \DEF(_B_qgrafoptions)
+         \IFNSET(_WAS_MODEL)
+            \ERROR(\(Model must be described!))
+         \ENDIF
+         \IFNSET(_WAS_PROCESS)
+            \ERROR(\(Process must be described before qgraf options!))
+         \ENDIF
+         \appendout(qgraf.dat)
+      \+\ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_qgrafoptions)
+      \DEF(_E_qgrafoptions)
+        \setout(null)
+        \scannerinit(qgraf.dat,
+          ._0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+          ,*)
+        \export(_onepi,)
+        \do
+           \switch(\let(_tmp,\gettoken()))
+              \case(options)
+                  \while"\let(_tmp,\gettoken())" ne ";" do
+                      \if"\get(_tmp)" eq "onepi" then
+                          \export(_onepi,OP)
+                      \endif
+                   \loop
+              \endswitch()
+        \while "\get(_tmp)" ne "\eof()" loop
+         \scannerdone()
+        \SET(_WAS_OPTIONS)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_header)
+      \DEF(_B_header)
+         \IFNSET(_configfile)
+            \ERROR(\(Internal error: Config name undefined))
+         \ENDIF
+         \IFNSET(_processname)
+            \ERROR(\(Set the process name before using header!))
+         \ENDIF
+         \IFSET(_WAS_HEADER)
+            \appendout(\GET(_configfile))\offblanklines\offleadingspaces\+
+         \ELSE
+            \setout(\GET(_configfile))\offblanklines\offleadingspaces\+
+            * This file is automatically generated by DIANA \version()
+            * for the process \GET(_processname).
+            \sysinfo()
+            \backslash()include(\GET(_settingsfile))
+         \ENDIF
+      \+\ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_header)
+      \DEF(_E_header)
+        \setout(null)
+        \SET(_WAS_HEADER)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_process)
+      \DEF(_B_process)
+         \IFNSET(_WAS_MODEL)
+           \ERROR(\(Model must be described!))
+         \ENDIF
+         \setout(\GET(_bosonfile))\+
+
+      \ENDDEF
+   \ENDIF
+   \IFNDEF(_E_process)
+      \DEF(_E_process)
+         \setout(null)
+         \scannerinit(\GET(_bosonfile),
+          ._0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+          ,*)
+         \_process()
+         \scannerdone()
+         \removefile(\GET(_bosonfile))
+         \if not exist "_ingoing" then
+             \runerror(\('ingoing' must be specified!))
+*             _qin also
+         \endif
+         \if not exist "_outgoing" then
+             \runerror(\('outgoing' must be specified!))
+         \endif
+*              _qout also
+         \if not exist "_loops" then
+             \runerror(\('loops' must be specified!))
+         \endif
+         \appendout(qgraf.dat)\offleadingspaces\offblanklines\+
+         in =\import(_qin)
+         out=\import(_qout)
+         loops=\import(_loops);
+         loop_momentum = ;
+         \setout(null)
+         \SET(_WAS_PROCESS)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_model)
+      \DEF(_B_model)
+        \SET(_Model)()
+        \setout(null)\+
+        \SET(_tmp_md)(\#(2))
+        \IFNEQ(_tmp_md)()
+          \FOR(_i_md)(\*)
+             \IFSET(_tmp_md)
+                \UNSET(_tmp_md)
+             \ELSE
+                \include(\_i_md())
+             \ENDIF
+          \ENDFOR
+        \ELSE
+           \UNSET(_tmp_md)
+        \ENDIF
+        \UNSET(_tmp_md)
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_model)
+      \DEF(_E_model)
+         \UNSET(_Model)
+         \buildqgraf()\+
+         \setout(\GET(_modelfile))
+         ********* Boson propagators *************
+         \-\SCAN(\if "\open(\GET(_bosonfile))" eq "ok" then)\let(_i,1)
+               \while "\let(_tmp,\readln())"ne"\eof()" do
+                  \SCAN(\if\( )exist "_s_\GET(_bosonfile)\get(_i)" then)
+                     \killexp(_s_\GET(_bosonfile)\get(_i))
+                  \else\+
+                      \get(_tmp)
+                  \-\endif
+                  \inc(_i,1)
+               \loop
+           \endif
+         \blankline()\+
+         ********* Ghost propagators *************
+         \-\SCAN(\if "\open(\GET(_ghostfile))" eq "ok" then)\let(_i,1)
+               \while "\let(_tmp,\readln())"ne"\eof()" do
+                  \SCAN(\if\( )exist "_s_\GET(_ghostfile)\get(_i)" then)
+                     \killexp(_s_\GET(_ghostfile)\get(_i))
+                  \else\+
+                      \get(_tmp)
+                  \-\endif
+                  \inc(_i,1)
+               \loop
+           \endif
+         \blankline()\+
+         ********* Fermion propagators *************
+         \-\SCAN(\if "\open(\GET(_fermionfile))" eq "ok" then)\let(_i,1)
+               \while "\let(_tmp,\readln())"ne"\eof()" do
+                  \SCAN(\if\( )exist "_s_\GET(_fermionfile)\get(_i)" then)
+                     \killexp(_s_\GET(_fermionfile)\get(_i))
+                  \else\+
+                      \get(_tmp)
+                  \-\endif
+                  \inc(_i,1)
+               \loop
+           \endif
+         \blankline()\+
+         ********* Vertices *************
+         \-\SCAN(\if "\open(\GET(_vertexfile))" eq "ok" then)\let(_i,1)
+               \while "\let(_tmp,\readln())"ne"\eof()" do
+                  \SCAN(\if\( )exist "_s_\GET(_vertexfile)\get(_i)" then)
+                     \killexp(_s_\GET(_vertexfile)\get(_i))
+                  \else\+
+                      \get(_tmp)
+                  \-\endif
+                  \inc(_i,1)
+               \loop
+           \endif
+         \blankline()
+         \setout(null)
+         \removefile(\GET(_bosonfile))
+         \removefile(\GET(_fermionfile))
+         \removefile(\GET(_ghostfile))
+         \removefile(\GET(_vertexfile))
+
+         \removefile(qgraf.dat)
+         \message(\(Checking qgraf...))
+         \IFNSET(_qgrafname)
+            \if "\let(_qgrafname,\getenv(QGRAFNAME))" eq "" then 
+               \let(_qgrafname,\read(\(How to call qgraf? )))
+            \endif
+         \ELSE
+            \let(_qgrafname,\GET(_qgrafname))
+         \ENDIF
+         \system(\get(_qgrafname)>\GET(_vertexfile))
+
+        \scannerinit(\GET(_vertexfile),
+          .0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+          ,*)
+         \let(_grafversion,unknown)
+         \while "\gettoken()" ne "qgraf" do \loop
+         \switch(\gettoken())
+            \default()
+               \if "\gettoken()" eq "version" then
+                  \let(_grafversion,\gettoken())
+               \endif
+            \case(-)
+               \let(_grafversion,\gettoken())
+         \endswitch()
+         \scannerdone()
+         \removefile(\GET(_vertexfile))
+         \switch(\get(_grafversion))
+            \case(2.0)
+               \message(\(QGRAF 2.x detected))
+               \let(_grafversion,2)
+            \case(3.0,3.1,3.1.4)
+               \message(\(QGRAF 3.x detected))
+               \let(_grafversion,3)
+            \default()
+               \message(\(Unsupported QGRAF version: )\get(_grafversion))
+               \message(\(Only 2.0, 3.0 and 3.1 are supported))
+               \message(**** Exit ****)
+               \exit(1)
+         \endswitch()
+         \if "\get(_grafversion)" eq "2" then
+         \setout(qgraf.dat)\offleadingspaces\offblanklines\+
+         output = '\GET(_qlistfile)' ;
+         style = '\GET(_vertexfile)' ;
+         model = '\GET(_qgrafmfile)' ;
+         \setout(\GET(_vertexfile))
+         <prologue>
+         *
+         * file generated by <program>
+         *
+         <prologue_loop>* <data>
+         <end>*
+         <diagram>
+         *--#[[ d<diagram_index>:
+         *
+         \onleadingspaces      <minus><symmetry_factor>\offleadingspaces
+
+         <vertex_loop>    *vx(<sub_loop><field>(<edge_index>),<end><back>)
+         <end><back>
+         *
+         *--#]] d<diagram_index>:
+         <epilogue>
+         *
+         * end
+         *
+         <exit>
+         \setout(null)
+         \elif "\get(_grafversion)" eq "3" then
+         \setout(qgraf.dat)\offleadingspaces\offblanklines\+
+         output = '\GET(_qlistfile)' ;
+         style = '\GET(_vertexfile)' ;
+         model = '\GET(_qgrafmfile)' ;
+         \setout(\GET(_vertexfile))
+         <prologue>
+         *
+         * file generated by <program>
+         *
+         <command_loop><command_line_loop>* <command_data><end><end>*
+         <diagram>
+         *--#[[ d<diagram_index>:
+         *
+         \onleadingspaces      <minus><symmetry_factor>\offleadingspaces
+
+         <vertex_loop>    *vx(<ray_loop><field>(<propagator_index>),<end><back>)
+         <end><back>
+         *
+         *--#]] d<diagram_index>:
+         <epilogue>
+         *
+         * end
+         *
+         <exit>
+         \setout(null)
+         \endif
+         \SET(_WAS_MODEL)()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_boson)
+      \DEF(_B_boson)\modesave()\-
+        \IFNSET(_Model)
+          \ERROR(\(The 'boson' environment is allowed only into the 'model'!))
+        \ENDIF
+        \export(_bosonok,)
+        \offleadingspaces\offblanklines\offtailspaces
+        \appendout(\GET(_bosonfile))\+
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_boson)
+      \DEF(_E_boson)
+        \setout(null)
+        \moderestore()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_fermion)
+      \DEF(_B_fermion)\modesave()\-
+        \IFNSET(_Model)
+          \ERROR(\(The 'fermion' environment is allowed only into the 'model'!))
+        \ENDIF
+        \export(_fermionok,)
+        \offleadingspaces\offblanklines\offtailspaces
+        \appendout(\GET(_fermionfile))\+
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_fermion)
+      \DEF(_E_fermion)
+        \setout(null)
+        \moderestore()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_ghost)
+      \DEF(_B_ghost)\modesave()\-
+        \IFNSET(_Model)
+          \ERROR(\(The 'ghost' environment is allowed only into the 'model'!))
+        \ENDIF
+        \export(_ghostok,)
+        \offleadingspaces\offblanklines\offtailspaces
+        \appendout(\GET(_ghostfile))\+
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_ghost)
+      \DEF(_E_ghost)
+        \setout(null)
+        \moderestore()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_vertex)
+      \DEF(_B_vertex)\modesave()\-
+        \IFNSET(_Model)
+          \ERROR(\(The 'vertex' environment is allowed only into the 'model'!))
+        \ENDIF
+        \export(_vertexok,)
+        \offleadingspaces\offblanklines\offtailspaces
+        \appendout(\GET(_vertexfile))\+
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_vertex)
+      \DEF(_E_vertex)
+        \setout(null)
+        \moderestore()
+      \ENDDEF
+   \ENDIF
+
+   \include(basis.tml)
+   \SET(_MainStyle)(create.tml)
+
+   \function getverify;
+      \if "\symbolpresent(\let(tmp,\gettoken()))" ne "false" then
+         \if "\get(tmp)" ne "\eof()" then
+           \runerror(\(Unexpected )'\get(tmp)'.)
+         \else
+            \runerror(\(Unexpected end of file.))
+         \endif
+      \endif
+      \return(\get(tmp))
+   \end
+
+   \function verifytype ;
+   \if "\let(_tmp,\gettoken())" ne ";" then
+       \if "\len(\get(_tmp))" ne "1" then
+          \runerror(\(Only one-character type is allowed!))
+       \endif
+       \if "\gettoken()" ne ";" then
+          \runerror(\(;) expected.)
+       \endif
+   \endif
+   \end
+
+   \function gramanalysis file;
+   \SCAN(\if "\get(file)" ne "\GET(_vertexfile)" then)
+      \let(_vcount,-1)\if not exist "_prot_c" then
+         \export(_prot_c,0)
+      \endif
+      \SCAN(\if "\get(file)" eq "\GET(_bosonfile)" then)
+         \let(_type,b)\let(_qtype,+)
+      \SCAN(\elif "\get(file)" eq "\GET(_fermionfile)" then)
+         \let(_type,f)\let(_qtype,-)
+      \SCAN(\elif "\get(file)" eq "\GET(_ghostfile)" then)
+         \let(_type,b)\let(_qtype,-)
+      \else
+         \runerror(\(Unknown type of file )\get(file)!)
+      \endif
+   \else
+      \let(_type,b)
+      \let(_vcount,0)\let(v3_c,0)\let(v4_c,0)
+      \let(v5_c,0)\let(v6_c,0)\let(v7_c,0)\let(v8_c,0)
+   \endif
+
+   \let(_savecheck,\getcheck())
+   \setcheck([];\(,)\eof())
+   \if not exist "_Func_c" then \export(_Func_c,0)\endif
+   \if not exist "_Com_c" then \export(_Com_c,0)\endif
+   \scannerinit(\get(file),
+          ._0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+          ,*)
+
+   \do
+      \switch(\let(_tmp,\gettoken()))
+         \case([)
+             \let(_st,stINIT)\let(_beg,\getscanline())\let(_coinc,)
+             \while "\get(_st)" ne "stEND" do
+                 \switch(\get(_st))
+                   \case(stINIT)
+                      \let(_qstr,)
+                      \if"\get(_vcount)"ne"-1"then
+                          \let(_st,stVERTEX)
+                      \else
+                          \let(_st,stPROP)
+                      \endif
+                   \case(stPROP)
+                      \if exist "_Ty_\let(_tmp,\getverify())" then
+                         \if "\import(_Ty_\get(_tmp))" ne "\get(_type)" then
+                             \goto(_wr_redir)
+                         \endif
+                      \else
+                         \export(_Ty_\get(_tmp),\get(_type))
+                      \endif
+                      \let(_qstr,\get(_tmp))
+                      \if "\gettoken()" ne "," then
+                         \runerror(\(,) expected.)
+                      \endif
+                      \if not exist "_Ty_\let(_tmp,\getverify())" then
+                         \export(_Ty_\get(_tmp),\get(_type))
+                      \endif
+                      \let(_qstr,\get(_qstr)\(,)\get(_tmp)\(,)\get(_qtype))
+                      \if "\gettoken()" ne ";" then
+                         \runerror(\(':' expected.))
+                      \endif
+                      \verifytype()
+                      \if exist "\get(_qstr)" then
+                          \let(_tmp_cnt,\import(\get(_qstr)))
+                          \let(_coinc,1)
+                      \else
+                          \let(_tmp_cnt,\INC(_prot_c,1))
+                          \let(_coinc,)
+                      \endif
+                      \export(\get(_qstr),\get(_tmp_cnt))
+                      \export(q_p_out_\get(_tmp_cnt),[\get(_qstr)])
+                      \if exist "_FCv_\let(_tmp,\getverify())"then
+                         \if "\import(_FCv_\get(_tmp))"ne"\get(_type)"then
+                             \label(_wr_redir)
+                             \runerror(\(Wrong redirection of id )'\get(_tmp)')
+                         \endif
+                      \else
+                         \export(_FCv_\get(_tmp),\get(_type))
+                         \if "\get(_type)" ne "b" then
+                             \export(_Func_c,\sum(\import(_Func_c),1))
+                             \export(_Functions\import(_Func_c),\get(_tmp))
+                         \else
+                             \export(_Com_c,\sum(\import(_Com_c),1))
+                             \export(_Commuting\import(_Com_c),\get(_tmp))
+                         \endif
+                      \endif
+                      \while "\let(_tmp,\gettoken())" ne ";" do
+                        \if "\get(_tmp)" eq "]" then
+                           \runerror(\(Unexpected ']'.))
+                        \endif
+                      \loop
+                      \getverify()
+                      \if "\let(_tmp,\gettoken())" ne "]" then
+                         \if "\get(_tmp)" ne ";" then
+                            \runerror(\(';' expected.)) 
+                         \endif
+                         \gettoken() 
+                         \if "\gettoken()" ne "," then
+                            \runerror(\(',' expected.)) 
+                         \endif
+                         \gettoken() 
+                         \if "\gettoken()" ne "," then
+                            \runerror(\(',' expected.)) 
+                         \endif
+                         \gettoken()
+                         \if"\let(_tmp,\gettoken())" ne "]" then
+                            \if"\get(_tmp)" ne ";" then
+                              \runerror(\(';' or ']' expected.))
+                            \endif
+                            \while "\gettoken()"ne "]" do \loop
+                         \endif
+                      \endif
+                      \let(_st,stEND)
+                   \case(stVERTEX)
+                      \let(_type,b)
+                      \let(_vcount,0)
+                      \do
+                         \if not exist "_Ty_\let(_tmp,\getverify())" then
+                            \runerror(\(Undefined )'\get(_tmp)'.)
+                         \endif
+                         \if "\import(_Ty_\get(_tmp))" eq "f" then
+                             \let(_type,f)
+                         \endif
+
+                         \if "\get(_qstr)" ne "" then
+                            \let(_qstr,\get(_qstr)\(,))
+                         \endif
+                         \let(_qstr,\get(_qstr)\get(_tmp))
+                         \if "\let(_tmp,\gettoken())" ne "," then
+                            \if "\get(_tmp)" ne ";" then
+                               \runerror(\(;) expected.)
+                            \endif
+                         \endif
+                         \if "\inc(_vcount,1)" gt "8" then
+                             \label(runerror)
+                             \runerror(\(Only 3 and 4 particles vertex allowed!))
+                         \endif
+                      \while "\get(_tmp)" ne ";" loop
+                      \verifytype()
+                      \if "\get(_vcount)" lt "3" then
+                          \goto(runerror)
+                      \endif
+                      \if exist "\get(_qstr)" then
+                          \let(_tmp_cnt,\import(\get(_qstr)))
+                          \let(_coinc,1)
+                      \else
+                          \let(_tmp_cnt,\inc(v\get(_vcount)_c,1))
+                      \endif
+                      \export(\get(_qstr),\get(_tmp_cnt))
+                      \export(q_v\get(_vcount)_out_\get(_tmp_cnt),[\get(_qstr)])
+                      \if exist "_FCv_\let(_tmp,\getverify())"then
+                         \if "\import(_FCv_\get(_tmp))"ne"\get(_type)"then
+                             \runerror(\(Wrong redirection of id )'\get(_tmp)')
+                         \endif
+                      \else
+                         \export(_FCv_\get(_tmp),\get(_type))
+                         \if "\get(_type)" ne "b" then
+                             \export(_Func_c,\sum(\import(_Func_c),1))
+                             \export(_Functions\import(_Func_c),\get(_tmp))
+                         \else
+                             \export(_Com_c,\sum(\import(_Com_c),1))
+                             \export(_Commuting\import(_Com_c),\get(_tmp))
+                         \endif
+
+                      \endif
+                      \do \while"\gettoken()" ne "]" loop
+                      \let(_st,stEND)
+                   \default()
+                      \runerror(Internal\( )eror)
+                 \endswitch()
+             \loop
+             \let(_end,\getscanline())
+             \if "\get(_coinc)" ne "" then
+                \let(_coinc,\get(_beg))
+                \while "\numcmp(\get(_coinc),\get(_end))" ne ">" do
+                  \export(_s_\get(file)\get(_coinc),)
+                  \inc(_coinc,1)
+                \loop
+             \endif
+         \case(\eof())
+            \scannerdone()
+         \default()
+            \runerror(\(Unexpected )'\get(_tmp)'!)
+      \endswitch()
+   \while "\get(_tmp)" ne "\eof()" loop
+   \setcheck(\get(_savecheck))
+   \end
+
+   \function buildqgraf;
+      \message(\(Building QGRAF data.))
+      \if exist "_bosonok" then
+         \message(\(Boson propagators...))
+         \gramanalysis(\GET(_bosonfile))
+      \endif
+      \if exist "_fermionok" then
+         \message(\(Fermion propagators...))
+         \gramanalysis(\GET(_fermionfile))
+      \endif
+      \if exist "_ghostok" then
+         \message(\(Ghost propagators...))
+         \gramanalysis(\GET(_ghostfile))
+      \endif
+      \if exist "_vertexok" then
+         \message(\(Vertices...))
+         \gramanalysis(\GET(_vertexfile))
+      \else
+        \runerror(\(Vertices must be specified.))
+      \endif
+      \let(_i,0)
+      \setout(\GET(_qgrafmfile))\offleadingspaces\offblanklines\+
+      * The model description for QGRAF for the process '\GET(_processname)'.
+      * This file is automatically generated by DIANA \version().
+      \blankline()
+      * Propagators:
+      \-
+      \while exist "q_p_out_\inc(_i,1)" do
+        \+\import(q_p_out_\get(_i))\eol()\-
+      \loop
+      \let(_i,0)
+      \+
+      \blankline()
+      * Three point vertices:
+      \-
+      \while exist "q_v3_out_\inc(_i,1)" do
+        \+\import(q_v3_out_\get(_i))\eol()\-
+      \loop
+      \let(_i,0)
+      \+
+      \blankline()
+      * Four point vertices:
+      \-
+      \while exist "q_v4_out_\inc(_i,1)" do
+        \+\import(q_v4_out_\get(_i))\eol()\-
+      \loop
+      \let(_i,0)
+      \+
+      \blankline()
+      * Five point vertices:
+      \-
+      \while exist "q_v5_out_\inc(_i,1)" do
+        \+\import(q_v5_out_\get(_i))\eol()\-
+      \loop
+      \let(_i,0)
+      \+
+      \blankline()
+      * Six point vertices:
+      \-
+      \while exist "q_v6_out_\inc(_i,1)" do
+        \+\import(q_v6_out_\get(_i))\eol()\-
+      \loop
+      \let(_i,0)
+      \+
+      \blankline()
+      * Seven point vertices:
+      \-
+      \while exist "q_v7_out_\inc(_i,1)" do
+        \+\import(q_v7_out_\get(_i))\eol()\-
+      \loop
+      \let(_i,0)
+      \+
+      \blankline()
+      * Eigth point vertices:
+      \-
+      \while exist "q_v8_out_\inc(_i,1)" do
+        \+\import(q_v8_out_\get(_i))\eol()\-
+      \loop
+      \setout(null)
+      \message(\(                      ...done))
+   \end
+   \function _process ;
+      \let(_savecheck,\getcheck())
+      \setcheck([];\(,)\eof())
+      \export(_legs,0)
+      \do
+        \let(_loops,)
+        \if"\let(_tmp,\gettoken())" eq "ingoing" then
+           \let(_head,_ingoing)
+           \let(_qhead,_qin)
+        \elif"\get(_tmp)"eq"outgoing" then
+           \let(_head,_outgoing)
+           \let(_qhead,_qout)
+        \elif"\get(_tmp)"eq"loops" then
+           \let(_loops,-1)
+           \if "\let(_tmp,\gettoken())" ne "=" then
+              \runerror(\('=' expected instead of )\get(_tmp)!)
+           \endif
+           \let(__savchck,\getcheck())
+           \setcheck(0123456789)
+           \if "\check(\let(_tmp,\gettoken()))" ne "true" then
+              \runerror(\(Integer number expected instead of )\get(_tmp)!)
+           \endif
+           \setcheck(\get(__savchck))
+           \export(_loops,\get(_tmp))
+           \if "\let(_tmp,\gettoken())" ne ";" then
+              \if "\get(_tmp)" eq "\eof()" then
+                  \runerror(\(Unexpected end of file!))
+              \else
+                 \runerror(\(';' expected instead of )\get(_tmp)!)
+              \endif
+           \endif
+        \elif"\get(_tmp)"eq"\eof()" then
+           \let(_loops,-1)
+        \else
+              \runerror(\('ingoing', 'outgoing' or 'loops' expected!))
+        \endif
+        \if "\get(_loops)" eq "" then
+           \export(\get(_head),)
+           \export(\get(_qhead),)
+           \let(_st,stINIT)
+           \while "\get(_st)" ne "stEND" do
+              \switch(\get(_st))
+                 \case(stINIT)
+                   \if "\let(_part,\gettoken())" ne ";" then
+                      \INC(_legs,1)
+                      \if not exist "_Ty_\get(_part)" then
+                         \runerror(\(Undefined )\get(_part)!)
+                      \endif
+                      \export(\get(_head),\import(\get(_head))\get(_part)\obracket())
+                      \export(\get(_qhead),\import(\get(_qhead))\get(_part))
+                      \if "\gettoken()" ne "(" then
+                         \runerror('\obracket()'\( expected!))
+                      \endif
+                      \let(_st,stREADIND)
+                   \else
+                      \export(\get(_head),;)
+                      \export(\get(_qhead),;)
+                      \let(_st,stEND)
+                   \endif
+                 \case(stREADIND)
+                   \if "\let(_part,\gettoken())" eq ";" then
+                     \export(\get(_head),\import(\get(_head));)
+                     \let(_st,stREADVEC)
+                   \else
+                     \if "\get(_part)" eq "," then 
+                        \if 
+                 "\copy(\import(\get(_head)),\sub(\len(\import(\get(_head))),1),1)"
+                         eq "(" then
+                            \runerror(\(Unexpected ','!))
+                        \endif
+                        \export(\get(_head),\import(\get(_head))\get(_part))
+                        \let(_part,\gettoken())
+                     \endif
+                     
+                     \export(\get(_head),\import(\get(_head))\get(_part))
+                     \export(\get(_head),\import(\get(_head))\let(_part,
+                                                       \gettoken()))
+                     
+                     \if "\get(_part)" eq ":" then
+                        \export(\get(_head),\import(\get(_head))\gettoken())
+                     \elif "\get(_part)" eq ";" then
+                        \let(_st,stREADVEC)
+                     \endif
+                   \endif
+                 \case(stREADVEC)
+                   \let(_ext_mom\import(_legs),)
+                   \let(_ext_mom_nv\import(_legs),0)
+                   \while "\let(_part,\getverify())" ne ")" do
+                      \inc(_ext_mom_nv\import(_legs),1)
+                      \let(_ext_mom\import(_legs),
+                        \get(_ext_mom\import(_legs))\get(_part))
+                      \export(\get(_head),\import(\get(_head))\get(_part))
+                   \loop
+                   \export(\get(_head),\import(\get(_head))\cbracket())
+                   \let(_st,stREADSEP)
+                 \case(stREADSEP)
+                   \if "\let(_part,\gettoken())" eq ";" then
+                      \let(_st,stEND)
+                   \else
+                      \if "\get(_part)" ne "," then
+                         \runerror(\(',' expected instead of )\get(_part)!)
+                      \endif
+                      \let(_st,stINIT)
+                   \endif
+                   \export(\get(_head),\import(\get(_head))\get(_part))
+                   \export(\get(_qhead),\import(\get(_qhead))\get(_part))
+                 \default()
+                   \runerror(\(Internal error))
+              \endswitch()
+           \loop
+           \if "\get(_part)" ne ";" then
+              \runerror(\(';' expected instead of )\get(_part)!)
+           \endif
+        \endif
+      \while "\get(_tmp)" ne "\eof()" loop
+      \if "\import(_legs)" ne "0" then                 
+         \export(_ext_mom,[\get(_ext_mom\import(_legs)))
+         \let(i,\import(_legs))
+         \while "\numcmp(\inc(i,-1),1)"ne "<" do
+           \export(_ext_mom,\import(_ext_mom)\(,)\get(_ext_mom\get(i)))
+         \loop
+         \export(_ext_mom,\import(_ext_mom)]\( ))
+         \let(i,0)
+         \while "\numcmp(\inc(i,1),\import(_legs))"ne ">" do
+           \if "\get(_ext_mom_nv\get(i))" eq "1" then
+              \export(_extToken\get(i),\get(_ext_mom\get(i)))
+           \else
+              \export(_extToken\get(i),\obracket()\get(_ext_mom\get(i))\cbracket())
+           \endif
+          \loop
+      \else
+         \export(_ext_mom,)
+      \endif
+      \setcheck(\get(_savecheck))
+   \end
+   \function _OPV opv,name;\-
+      \if exist "\get(opv)1" then \let(_i,1)\export(__strlen,0)
+        \+\formatstr(\get(name) \obracket())\formatstr(\import(\get(opv)\get(_i)))\while 
+        exist "\get(opv)\inc(_i,1)"
+        do\formatstr(\(,)\import(\get(opv)\get(_i)))\loop\cbracket()\-
+      \endif
+   \+\end
+\ENDIF

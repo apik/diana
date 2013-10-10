@@ -1,0 +1,70 @@
+\MINVERSION(2.28)
+***********************************************************************
+***********************************************************************
+
+\IFNSET(__FOLDERS__)
+   \keepfile
+   \SET(__FOLDERS__)()
+   \IFSET(foldercounter)
+      \DEF(foldercounter)\GET(foldercounter)\ENDDEF
+   \ELSE
+      \DEF(foldercounter)\counter()\ENDDEF
+   \ENDIF
+   \IFNSET(foldername)\SET(foldername)(n)\ENDIF
+   \IFNDEF(_GetFName)
+     \DEF(_GetFName)
+       \if not exist "__Outfname" then
+          \export(__Outfname,\#(1))
+       \endif
+       \let(__outfname,\import(__Outfname))
+     \ENDDEF
+   \ENDIF
+   \IFNDEF(breakfolder)
+      \DEF(breakfolder)\modesave()\offleadingspaces
+        *--#] \_GETFOLDERNAME()\if"\islast()"ne"true"then\foldercounter()\else 0\endif :
+        \blankline()
+        *--#[ \let(_foldername,\#(1))\if"\islast()"ne"true"then\foldercounter()\else 0\endif :\moderestore()\ENDDEF
+   \ENDIF
+   \IFNDEF(breakfolderfile)
+      \DEF(breakfolderfile)\modesave()\offleadingspaces
+        *--#] \_GETFOLDERNAME()\if"\islast()"ne"true"then\foldercounter()\else 0\endif :
+        \blankline()\-
+        \SCAN(\if\( )not\( )exist "_\#(2)_opened" then)
+           \export(_\#(2)_opened,)
+           \setout(\#(2))\IFDEF(Logo)\+\Logo()\-\ENDIF
+        \else\appendout(\#(2))\endif\+
+        *--#[ \let(_foldername,\#(1))\if"\islast()"ne"true"then\foldercounter()\else 0\endif :\moderestore()\ENDDEF
+   \ENDIF
+   \IFNDEF(_E_output)
+     \DEF(_E_output)\offleadingspaces
+         *--#] \_GETFOLDERNAME()\if"\islast()"ne"true"then\foldercounter()\else 0\endif :
+         \blankline()
+        \IFDEF(OUTPUTEPILOG)\OUTPUTEPILOG()\ENDIF
+        \setout(null)
+        \if "\islast()"eq "true"then
+            \closePS()
+        \elif "\lastdiagramnumber()" eq "\currentdiagramnumber()" then
+              \closePS()
+        \endif
+        \UNDEF(integrand)
+        \killvar(_NInpStr)
+        \IFDEF(OUTPUTREADY)\OUTPUTREADY()\ENDIF
+     \ENDDEF
+   \ENDIF
+   \IFNDEF(_GETFOLDERNAME)
+      \DEF(_GETFOLDERNAME)\if "\exist(_foldername)"eq"true"then\get(_foldername)\else\GET(foldername)\endif\ENDDEF
+   \ENDIF
+   \IFNDEF(_OUTPUT)
+      \DEF(_OUTPUT)
+        \SCAN(\if\( )not\( )exist "_\#(1)_opened" then)
+              \export(_\#(1)_opened,)
+              \setout(\#(1))\+\IFDEF(Logo)\Logo()\ENDIF\modesave()
+              \offleadingspaces  *--#[ \_GETFOLDERNAME()\if"\islast()"ne"true"then\foldercounter()\else 0\endif :
+              \moderestore()\IFDEF(OUTPUTHEADER)\OUTPUTHEADER()\ENDIF\else
+              \appendout(\#(1))\modesave()\offleadingspaces
+              *--#[ \_GETFOLDERNAME()\if"\islast()"ne"true"then\foldercounter()\else 0\endif :
+              \moderestore()\IFDEF(OUTPUTHEADER)\OUTPUTHEADER()\ENDIF\endif\ENDDEF
+   \ENDIF
+   \include(specmode.tml)
+   \SET(_MainStyle)(folders.tml)
+\ENDIF

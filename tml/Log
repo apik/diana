@@ -1,0 +1,855 @@
+Log:
+ 
+******************** revision 2.35 date: 2003/08/22 15:47:09
+New option "silent" for create style: do not ask questions.
+
+New line type for propagator plotting is added: nothing. This means 
+the line must not be drawn at all, e.g.:
+\setpropagatorline(le  , nothing,  0, 0)
+or 
+[le,Le;l; FF(num,fnum,vec, mle)*i_; mmle; nothing,0,0]
+
+
+File list is not changed. We keep the following files:
+WA_Majorana.inc
+basis.tml
+create.tml
+folders.tml
+ftop0_3_0.top
+ftop0_4_0.top
+ftop1_5_3.top
+header.ps
+itop0.top
+itop1.top
+itop2.top
+routines.rtn
+sections.tml
+simpleMajorana.inc
+simpleQDE.inc
+specmode.tml
+su3_nocolor.inc
+tbl.prg
+ 
+******************** revision 2.30 date: 2002/06/21 15:46:14
+Bug is fixed:
+When the number of tolologies is exceeded the default maximal number of 
+topologies (1009), Diana failed to load loop marks. Now it is fixed.
+
+Drivers for .eps files are improved: now in the beginning of the generated 
+files colors are reset - sometimes encapsulating programs do not perform 
+this operation.
+
+Default internal topology table itop1.top is changed
+to express bridges are expressed in terms of chords
+external momenta are expressed in terms of chords
+and finally everything is expressed in terms of external momenta
+
+File "specmode.tml" is changed:
+EPS drivers: if a preprocessor variable  EPS_showpage is defined, EPS files
+are provided by showpage instruction, i.e. they can be printed, e.g.:
+SET EPS_showpage = ""
+
+New environment
+\Begin(LEFTSPINOR,i) \End(LEFTSPINOR)
+loops all left multipliers providng \i() as a proper external line index.
+New environment
+\Begin(RIGHTSPINOR,i) \End(RIGHTTSPINOR)
+loops all right multipliers providng \i() as a proper external line index.
+Example:
+   G Rq =\Begin(LEFTSPINOR,i)spl(\i(),\momentum(\i(),))*\End(LEFTSPINOR)
+      \integrand()
+      \Begin(RIGHTSPINOR,i)*spr(\i(),\momentum(\i(),))\End(RIGHTSPINOR);
+
+File list is changed. Now we keep the following files:
+WA_Majorana.inc
+basis.tml
+create.tml
+folders.tml
+ftop0_3_0.top
+ftop0_4_0.top
+ftop1_5_3.top
+header.ps
+itop0.top
+itop1.top
+itop2.top
+routines.rtn
+sections.tml
+simpleMajorana.inc
+simpleQDE.inc
+specmode.tml
+su3_nocolor.inc
+tbl.prg
+ 
+******************** revision 2.29 date: 2002/06/12 19:05:25
+File "specmode.tml" is changed:
+Postscript drivers printing a momenta information use new operator
+\vectorOnLine() (formerly was \momentum()). A corresponding momentum 
+is directed as in a topology.
+
+New environments:
+\Begin(LINEMARKS,n,m) ... \End(LINEMARKS)
+\Begin(VERTEXMARKS,n,m) ... \End(VERTEXMARKS)
+Loops the loop at all lines/vertices and maps line/vertex numbers to marks. 
+Example:
+\Begin(LINEMARKS,l,m)
+   fflow(\m())=\linefflow(\l())
+\End(LINEMARKS)
+\Begin(VERTEXMARKS,v,m)
+   fflow(\m())=\vertexfflow(\v())
+\End(VERTEXMARKS)
+
+File "create.tml" is changed.
+
+New mechanism for automatic momenta distributing:
+ If the preprocessor variable  CHORD is set to some value [+-]<id>, 
+   it forces DIANA to replace the rest of chords (except loop part) by +/- id#, 
+   where # is the line index. The proper topology remarks are generated automatically.
+ If the preprocessor variable  BRIDGE is set to some value [+-]<id>, 
+   it forces DIANA to replace the rest of bridges by +/- id#,  where # is the 
+   line index. The proper topology remarks are generated automatically.
+  Example:
+  SET BRIDGE="b"
+  SET CHORD="-c"
+  leads to the following:
+topology u4_=
+(-4,1)(-3,2)(-2,2)(-1,1)(1,3)(4,2)(4,3)(3,4):
+   [+p2,+p1,+p2,+p1]+b1,+b2,-c3+k,+k;
+remarks u4_=
+   Q1 = b1:
+   P1 = -p2+p1:
+   Q2 = b2:
+   P2 = -p2+p1:
+   Q3 = c3:
+   P3 = -p2+p1:
+   NDEF = 3;
+
+
+If the preprocessor variable _qgrafname is NOT set, then the environment 
+variable QGRAFNAME will be used, if it is not set, then DIANA will ask 
+about the QGRAF name.
+If the preprocessor variable _DIANANAME is NOT set, then the environment
+variable DIANANAME will be used, if it is not set, then DIANA fails.
+
+New command line option: help - type brief help and exit.
+
+Bugs in the default internal topology table itop1.top are fixed:
+corrected i38 Q3={chord}3 -> Q3={bridge}3
+corrected i28 {bridge}3->{bridge}1 on second line
+corrected i39 Q3={chord}3 -> Q3={bridge}3
+
+
+File list is changed. Now we keep the following files:
+basis.tml
+create.tml
+folders.tml
+ftop0_3_0.top
+ftop0_4_0.top
+header.ps
+itop0.top
+itop1.top
+routines.rtn
+sections.tml
+specmode.tml
+su3_nocolor.inc
+tbl.prg
+ 
+******************** revision 2.28 date: 2002/06/04 18:56:57
+Revision 2.27 was not fixed!!
+
+Macro \MINVERSION( ) is used in some .tml files. -  accepts a revision number of a 
+  form maj[.min[app]]
+  where maj and min are numbers while app is some text(not digits!)
+  This directive generates an error if its argument is GREATER then the current
+  Diana revision number
+
+File "folders.tml" is changed : \closePS() is invoked after processing of the 
+last diagram, "lastcall" is not necessary.
+
+File "specmode.tml" is changed:
+   1. The font size restriction in EPS driver is removed.
+   2. \closePS() is invoked after processing of the
+     last diagram, "lastcall" is not necessary.
+   3. Postscript drivers re-written completely to support the particle image, see
+      http://www.physik.uni-bielefeld.de/~tentukov/printing.html#IMAGE
+      (new function setparticleimage)
+   4. A new driver is developed (info EPS), see
+      http://www.physik.uni-bielefeld.de/~tentukov/printing.html#IEPS
+      (new functions setIEPSshift setIEPSpars outInfoEPS)
+   5. The function \checkfloat(n) - halts the system if n is not a floating 
+      point number.
+
+File "header.ps" is changed to support the new driver.
+
+File "create.tml" is changed.
+    Now shape and momenta tables can be used independently.
+    Macro \shapetables() - explicitly loads topology tables with coordinates
+    Macro \momentatables() - explicitly loads topology tables with momenta
+
+    Attempts to load full default tables:    
+     ftop<loops><legs><outlines>[OP].top
+     ftop<loops><legs><outlines>.top
+     ftopBase.top
+    (If the preprocessor variable  _NO_FTABLES is NOT set to "YES", default is "NO")
+
+    Then default internal tables.
+     itop<loops><legs><outlines>[OP].top
+     itop<loops><legs><outlines>.top
+     itop<loops><legs>.top
+     itop<loops>.top
+     itopBase.top
+    (If the preprocessor variable  _NO_ITABLES is NOT set to "YES", default is "YES")
+
+    If the preprocessor variable _MARK_LOOP is set to YES (default is undefined),
+    then Diana will invoke the topology editor to permit the user mark bare 
+    integration momenta
+
+    Command line options available:
+    useoldtop - reuse old (saved) topologies, if present
+    rlm - load old (saved) loop momenta
+
+
+File list is changed. Now we keep the following files:
+ 
+******************** revision 2.26 date: 2002/06/04 17:54:16
+File "sections.tml" - missprint \SET(_MainStyle)(spections.tml)->
+    \SET(_MainStyle)(sections.tml)
+
+File "specmode.tml" is changed:    
+   1. function \outputDummyMomenta(thename) - now accepts the argument.
+
+     WARNING!!! In the previous Readme the folowing explanation was not correct, it 
+     must be applied to this version:
+
+     produces all defines necessary to express ``abstract'' integration momenta
+     come from the table in terms of external ones.
+     After that it defines the preprocessor variable containing the number of produced
+     defines. The name of the variable coincides with the function argument:
+     If current diagram does not contain such ``abstract'' momenta, e.g., all momenta 
+     are defined by the user, or distributed automatically by DIANA, the function will
+     output only #define thename "0". For each ``abstract'' momentum, the output of the 
+     function has the form #define <id> "(<ext_mom>)" where <id> coincide with 
+     the identifier of the corresponding vector, and <ext_mom> is the expression 
+     constructed from external momenta, which must replace the ``abstract'' momentum <id>.
+     
+   2. function \idDummyMomenta() - removed
+   3. Instead The environment \Begin(DUMMYMOMENTA) ... \End(DUMMYMOMENTA)
+     is suitable to use the macro definitions produced by the function
+      \outputDummyMomenta()
+
+Model su3u1_nocolor.inc is renamed to su3_nocolor.inc, and the "u" mass is changed
+    from '0' to 'mmU'
+
+File "create.tml" is changed.
+   1.Environment variable DISPLAY is checked before invokation tedi;
+   2. If the environment variable DIANANAMETOUSE is set, then its content 
+     will be used in the last message.
+
+File list is changed. Now we keep the following files:
+baseform.frm
+basis.tml
+create.tml
+folders.prg
+folders.tml
+form.prg
+header.ps
+itop0.top
+itop1.top
+program.prg
+routines.rtn
+sections.tml
+sm1.model
+specmode.tml
+su3.inc
+su3_nocolor.inc
+tbl.prg
+ 
+******************** revision 2.25 date: 2002/06/04 17:15:26
+File "create.tml" is changed - topology table support is added. 
+  Internal algorithm was changed so DIANA performs only one pass (was two).
+  The topology editor may be invoked twice.
+
+  To discard default internal tables (default NO)
+  SET _NO_TABLES = "YES"
+  Explicit "tables" still will be loaded
+
+  Set to something to prevent invoking the Topology
+  editor to edit internal topologies:
+  SET _NO_EDIT_INTERNAL="YES"
+  (default YES)
+
+  DIANA will use topology tables to determine both shape and momenta. The user
+  may deny momenta definition from  tables, setting up the preprocessor
+  variable:
+  SET NO_TABLE_MOMENTA="YES"
+  (default YES)
+
+  Macro
+  \externalcoordinates(x,y,x,y,x,y,...)
+  sets external vertices. Applied only for topologies with undefined external coordinates.
+  
+  Macro \loopmomenta(k1,k2,...) sets loop momenta for automatic momenta distribution.
+  All loop momenta must be defined in \vectors()
+  
+  Macro \zeromomentum(z): In case of one partcle reducible topology DIANA may need a 
+  symbol for the zero momentum, it may be any vector expression containing described 
+   vectors. E.g.:\zeromomentum(a-a)
+
+  Macro \token() permits the user to override any default translations. Example:
+   \token(bridge,b)
+   \token(chord,q)
+   \token(loop,k)
+   
+  Macro \tables() forces DIANA to load topology table explicitly from some file, e.g
+    \tables(myfulltops.top, myinternaltops.top)
+
+   INTERNALMOMENTA macro is removed.
+
+File "specmode.tml" is changed: 
+   1. function \outputDummyMomenta()
+     produces all defines necessary to express ``abstract'' integration momenta
+     come from the table in terms of external ones.
+     After that it defines the preprocessor variable containing the number of produced
+     defines. The name of the variable coincides with the function argument:
+     If current diagram does not contain such ``abstract'' momenta, e.g., all momenta 
+     are defined by the user, or distributed automatically by DIANA, the function will
+     output only #define thename "0". For each ``abstract'' momentum, the output of the 
+     function has the form #define <id> "(<ext_mom>)" where <id> coincide with 
+     the identifier of the corresponding vector, and <ext_mom> is the expression 
+     constructed from external momenta, which must replace the ``abstract'' momentum <id>.
+     
+   2. function \idDummyMomenta() - was changed in 2.26, not described.
+
+File list is changed. Now we keep the following files:
+baseform.frm
+basis.tml
+create.tml
+folders.prg
+folders.tml
+form.prg
+header.ps
+itop0.top
+itop1.top
+program.prg
+routines.rtn
+sections.tml
+sm1.model
+specmode.tml
+su3.inc
+su3u1_nocolor.inc
+ 
+******************** revision 2.24 date: 2002/06/04 14:47:01
+File "basis.tml" is changed: function \sysinfo() is added
+
+File "specmode.tml" is changed: 
+   1. User/time/system information is added to the header of the generated files
+   2. Line/vertex marks are used instead of numbers in Info ps driver
+
+File "create.tml" is changed.
+   1. System path now is placed into "settings.xxx" only if the preprocessor
+     variable _syspath is nonzero.
+   2. User/time/system information is added to the header of the generated files
+   3. Conters vertex/lines in generated file "settings.xxx" are changed so 
+     the line/vertex marks are used instead of numbers in a model.
+   4. If a macro \AFTERCREATION() is defined, then it will be invoked at the 
+     last step, instead of printing the message  
+     "... You may start calculations by the command: ..."
+   5. New preprocessor variable, _DIANANAME, is used to invoke DIANA.
+     It permits the user to use different names for DIANA setting e.g.
+     SET _DIANANAME = "diana24" in his create file
+   6. Generated topologies are automatically saved into the file
+    "topologies[OP]#.<processname>, where OP appears for one particle irreducible ,
+    # stands for the number of loops, and <processname> is the name of the process.
+      If this file exists, DIANA will ask the user would he like to use it.
+   7. Some complicated structure was added to work with internal topologies.
+      It was rejected in further versions so it is not described here.
+   
+Number of files saved as TML resources is restricted. Now we keep the following files:
+basis.tml
+create.tml
+folders.tml
+header.ps
+routines.rtn
+sections.tml
+specmode.tml
+backup
+extract
+
+Filelist and lastRevision files are added to the backup system.
+
+ 
+******************** revision 2.23 date: 2000/10/17 19:59:28
+File "create.tml" is changed.
+
+1. Pure vertices, without internal legs, now is processed correctly.
+   This has required some modifications in cycles in the file create.tml.
+2. Optional external momenta now are always outputted  -- this is necessary
+   for the Topology Editor.
+3. The behaviour of the Topology Editor is changed so that now the user can 
+   save the result of editing of the temporary file (_topol.<processname>)
+   into some other file. Every time the user will save, the original temporary 
+   file will be updated, too.
+     Old version invokes the Topology Editor with the following cmdline options:
+                -no_ask_file_exist true 
+                -no_save_file_dialog true 
+                -no_load_file_dialog true 
+                -save_on_exit true 
+     Now are:
+               -update_default_file true 
+               -no_load_file_dialog true 
+                -save_on_exit true 
+   The key -update_default_file is available for the Topology Editor 
+   starting from  revision 0.14
+ 
+******************** revision 2.22 date: 2000/07/11 10:42:39
+Postscript is improuved: a white stuff arond vertex is added,
+   files "headers.ps" and "specmode.ps" are changed.
+ 
+******************** revision 2.21 date: 2000/04/16 15:17:11
+Revision 2.20 was skipped.
+  Temporary (I hope:-) we will not support the style 
+"createsymmetry.tml" 
+ATTENTION! At present, the style file "createsymmetry.tml" is broken! 
+ 
+******************** revision 2.19 date: 2000/04/16 15:10:26
+1. File "specmode.tml": the postscript driver outInfoPS
+   is improved.
+
+Changings in the file  "create.tml":
+2. The maximal order coupling in a vertex is 8 (was 4).
+3. If the number of external lines is more then 3,
+   the Topology Editor will be run with the command line option 
+   -ytotal 400
+   to extend the vertical size of the automatically distributed topology. 
+4. New mechanizm of the automatic momenta distribution.
+   I a topology is undefined, then the common procedure is to output the minimal
+   topology with all momenta taken successively from the "vectors".
+      Else: if the topology is generated from the "generic" one,
+   i.e., "\topologyisgotfrom()" is "generic", then the topology is outputted
+   with its momenta by the operator \momentatext(n). Then all linemarks are 
+   outputted.
+      Else: the topology is assumed to be supplied by the user, and nothing 
+   happen.
+   To control the generated topologies, the user sould provide the topologies 
+   section \Begin (topology) ... \End(topology). The contents of this section
+   is used by Diana to generate topologies.
+      All generated topologies are added after all user defined settings.
+   Everithing wich does not concern topologies will be omitted; all generic 
+   topologies will be deleted, too.
+
+   
+       
+******************** revision 2.18 date: 2000/01/17 19:13:22
+Many and important changings!
+I) In PostScript drivers ( file "specmode.tml"): 
+   external lines are drawn as internal ones: outgoing ANTI-particles are drawn
+   as ingiong particles.
+II) Files "create.tml" and "createsymmetry.tml" were changed so the user 
+    can introduce many indices groups directly in the 'create' file. 
+    The old syntax is still valid.
+     New syntax:
+     a) It is possible to specify more then one indices group by means of
+        the macro 'indicesgroup'. Example:
+           \indicesgroup(lind,aind,find) 
+     b) For every group all indices must be defined as follows:     
+           \indices_lind(li,li1,li2,li3,...)
+           \indices_aind(ai,ai1,ai2,ai3,...)
+           \indices_find(fi,fi1,fi2,fi3,...)
+     c) Indices group for ingoing/outgoing particles can be qualified by 
+        the corresponding indices group:
+          ingoing g(li1:lind,ai1:aind;p1);
+          outgoing u(fi1:find;p2),U(fi2:find;p2);
+        Index without the group qualifier is supposed to be of the first indices
+        group:
+          ingoing g(li1,ai1:aind;p1);
+          outgoing u(fi1:find;p2),U(fi2:find;p2);
+        is equivalent to the previous example.
+III) New commands are introduced in the file "folders.tml":
+    a)
+     \breakfolderfile(newsection,newfile)
+     This command closes current output file and redirects
+     the output to the file "newfile" where the folder section
+     "newsection" is opened. Example: 
+     \breakfolderfile(def,uu.defs)
+     opens new file "uu.defs" and creates the section *--[ def#,
+     where # is the number of the current diagram.
+    b)
+     There is the possibility to change the default folder counting.
+     Example:
+     SET foldercounter = "\backslash()currentdiagramnumber()"
+     in the beginning of the configuration file will produce
+     the folder numbers according to QGRAF number of diagrams.
+ 
+******************** revision 2.17 date: 1999/11/27 18:11:45
+\getXfromY(fontsize,height) -- returns the width of the diagram scaled
+to fit the EPS bounding box 
+0 0 width height
+ 
+******************** revision 2.16 date: 1999/11/23 16:01:49
+The revision number policy is changed:
+now the revision number will coincide with the corresponding 
+Diana's revision, if the revision number is X.Y Intermediate revisions
+will be numbered as X.Y.1.n , where n = 1,2,....
+ 
+Printing facilities are added.
+
+New file :
+header.ps
+is added.
+
+In the file "create.tml" the syntax control is changed to admit the model
+extension in the Diana revision 2.16.
+
+New functions :
+   \initPostscript(      filename,
+                         papersize,
+                         orientation,
+                         xmargin,
+                         ymargin,
+                         xleftmargin,
+                         ncols,
+                         nrows,
+                         font,
+                         fontsize
+    )
+   \initInfoPS(fname)
+   \outInfoPS()
+   \outpostscript()
+   \outEPS(filename,Width,Height,font,fontsize)
+in "specmode.tml" will work starting with diana executable revision 2.16,
+
+and two new functions:
+\closePS()
+\setpropagatorline(particle, linetype, amplitude, thickness)
+in "specmode.tml" are independent on executable revision.
+
+A) To print all diagrams to the .ps file the user must:
+    1. Initialize the PostScript driver by means of the function
+       \initPostscript(  filename,
+                         papersize,
+                         orientation,
+                         xmargin,
+                         ymargin,
+                         xleftmargin,
+                         ncols,
+                         nrows,
+                         font,
+                         fontsize
+       )
+       This function creates the PS header, so it must be invoked only once.
+       Parameters:
+         fname       --   the output file name;
+         papersize   --   the paper size, one of :
+                          A0 (841 x 1189 mm)
+                          A1 (594 x 841 mm)
+                          A2 (420 x 594 mm)
+                          A3 (297 x 420 mm)
+                          A4 (210x297 mm, 8.26x11.7 inches)
+                          A5 (148 x 210 mm)
+                          A6 (105 x 148 mm)
+                          A7 (74 x 105 mm)
+                          A8 (52 x 74 mm)
+                          A9 (37 x 52 mm)
+                          B0 (1030 x 1456 mm)
+                          B1 (728 x 1030 mm)
+                          B10 (32 x 45 mm)
+                          B2 (515 x 728 mm)
+                          B3 (364 x 515 mm)
+                          B4 (257 x 364 mm)
+                          B5 (182x257 mm, 7.17x10.13 inches)
+                          B6 (128 x 182 mm)
+                          B7 (91 x 128 mm)
+                          B8 (64 x 91 mm)
+                          B9 (45 x 64 mm)
+                          C5E (163 x 229 mm)
+                          Comm10E (105 x 241 mm, US Common #10 Envelope)
+                          DLE (110 x 220 mm)
+                          Executive (7.5x10 inches, 191x254 mm)
+                          Folio (210 x 330 mm)
+                          Ledger (432 x 279 mm)
+                          Legal (8.5x14 inches, 216x356 mm)
+                          Letter (8.5x11 inches, 216x279 mm)
+                          Tabloid (279 x 432 mm) 
+         orientation  --  portrait or landscape
+         xmargin      --  both left and right margins
+         ymargin      --  both up and down margins
+         xleftmargin  --  additional left margin
+         ncols        --  number of columns per sheet
+         nrows        --  number of rows per sheet
+         font         --  the PostScript font name
+         fontsize     --  the PostScript font size
+       Example:
+         \initPostscript(alldiargams.ps,
+                         A4,
+                         Portrait,
+                         20,
+                         20,
+                         40,
+                         2,
+                         10,
+                         Helvetica,
+                         15
+         )
+    2. For each diagram, after the output term is created, the user 
+       must invoke the function
+       \outpostscript()
+    3. After all diagrams are printed, the user must call the function
+       \closePS()
+B) There is another form of graphical representation of diagram:
+   all giagrams are printed into one .ps file, one diagram per sheet.
+   They are printed together with the topology and momenta flows.
+   Such a form is convinient not for printing, but for investigating
+   the digram visually by means of some PostScript interpreter, e.g.,
+   by the GhostView. To this file the user must:
+    1. Initialize the PostScript driver by means of the function
+       \initInfoPS(filename)
+    2. For each diagram, after the output term is created, the user
+       must invoke the function 
+       \outInfoPS()
+    3. After all diagrams are printed, the user must call the function
+       \closePS()
+    NOTE: the same function, \closePS(), is used to close .ps files
+    opened by both "initPostscript" and "initInfoPS". If the user opens 
+    both these files, he must call the function  \closePS() only once
+    to close both these files.
+
+C) To print the the diagram into the Encapsulated Postscript file
+   the user can use the function
+   \outEPS(filename,Width,Height,font,fontsize)
+   after the output term is created.
+   If fontsize == 0, then the particles labels will not be outputted.
+   Note, the size of the diagram will be scaled to fit the smallest of
+   Width or Height, while the resulting BoundingBox will be kept intouched.
+   No initialization, no closePS!
+
+All of the above PS drivers use the same line type prescription.
+By default, they use the arrowed solid line of width 2.
+To set the line type for individual propagator, the user must
+define the global variable _PS_<P>, where <P> is the beginning of a propagator 
+as it is described in the model. The drivers will use the contents of this 
+variable to draw the propagator. For example, if the W-boson has the propagator
+[Wm,Wp], then the driver will try to find the variable
+_PS_Wm
+The contents of these variables must be of the type:
+<parameter> <linewidth> <PS routine name>,
+Here <PS routine name> is one of :
+   pln     -- line
+   plna    -- arrowed line ( the line with the arrow at the middle)
+   pph     -- photon (wavy) line
+   ppha    -- arrowed photon
+   pgl     -- gluon (spiral) line
+   pgla    -- arrowed gloun.
+The <parameter> is: 
+    amplitude for pph,ppha,pgl,pgla;
+    dash size for pln,plna.
+If such a variables are undefined when the PS initialization starts, the driver
+will try to initialize these variables from the _PSRaw stuff comes from
+the model file (see below).
+The above <PS routine name> stuff is driver-dependent. 
+The user is recommended to use the driver-independent way to initialize these 
+variables. 
+
+There are two possibilities. 
+
+The first one is to use the model extension
+available for the Diana revision 2.16:
+The model is extended so that there is possible to describe the type of 
+the drawing line while the propagator is describing. Example:
+   old revisions:
+      [A,A;a;VV(num,ind:1,ind:2,vec,0)*i_;0]
+   new revision ( from 2.16):
+      [A,A;a;VV(num,ind:1,ind:2,vec,0)*i_;0;wavy,4,2]
+I.e., just befor the last "]" the user can desribe (optionally) how to draw
+this line. The syntax is:
+ ;<linetype>,<parameter>,<linewidth>
+( in the above example:
+  <linetype>=wavy
+  <parameter>=3
+  <linewidth> = 2 )
+The <linetype> is just an abstract type of the line. It can be one of the
+following:
+   line        -- line 
+   arrowLine   -- arrowed line ( the line with the arrow at the middle)
+   wavy        -- photon-like (wavy) line
+   arrowWavy   -- arrowed photon-like line  
+   spiral      -- gluon-like  (spiral) line
+   arrowSpiral -- arrowed gloun-like line.
+
+This information is stored in the global variables:
+_PSRaw_#p -- the begin of the propagator containing this information;
+_PSRaw_#v -- this information in the form:
+    '<parameter> <linewidth> <linetype>'
+Here '#' is the order number.
+For example, let us suppose that the model in use has the following
+propagators description:
+[A,A   ;a; VV(num,ind:1 ,ind:2 ,vec, 0)*i_ ;0; wavy, 3, 3]
+[Z,Z   ;Z; VV(num,ind:1 ,ind:2 ,vec, 1)*i_ ;mmZ; wavy, 4, 3]
+[Wm,Wp ;W; VV(num,ind:2 ,ind:1 ,vec, 2)*i_ ;mmW; arrowWavy, 5, 3]
+
+Then the Diana will export the following global variables:
+\export(_PSRaw_1p,A) \export(_PSRaw_1v,\(3 3 wavy))
+\export(_PSRaw_2p,Z) \export(_PSRaw_2v,\(4 3 wavy))
+\export(_PSRaw_3p,Wm) \export(_PSRaw_3v,\(5 3 arrowWavy))
+During initialization, the driver will use these variables 
+to create the proper _PS_ variables (only if corresponding  _PS_ variable
+is undefined!) and then the driver will remove used _PSRaw_ variables.
+
+Another driver-independent way to initialize the _PS_ variables is 
+the function 
+   \setpropagatorline(particle, linetype, parameter, linewidth)
+Here parameters are the same as described for the model extension.
+The user can use this function to re-set line type comes from the
+model.
+ 
+******************** revision 1.10 date: 1999/10/15 12:21:39
+1. In create.tml the support of topology editor is added.
+   Now if the user defines the macro _TOPOLOGYEDITORNAME
+   in his create file, the following command will be 
+   performed innediately after topologies are generated:
+            \system(
+               \GET(_TOPOLOGYEDITORNAME)
+               \( -no_ask_file_exist true )
+               \( -no_save_file_dialog true )
+               \( -no_load_file_dialog true )
+               \( -save_on_exit true )
+               \( -out_lines )\get(_outlines)
+               \( -file )\GET(_topologyfile)
+            )
+2. Just a little bit ordering...
+
+ 
+ 
+******************** revision 1.9 date: 1999/09/28 17:05:34
+Files folders.prg and form.prg are reduced to  compatibility
+with other TM files
+
+
+
+
+ 
+******************** revision 1.8 date: 1999/07/20 12:17:18
+Minor bug is fixed in "create.tml" in function 
+"swapsignes": old version incorrectly works with
+leading "-"
+
+
+ 
+******************** revision 1.7 date: 1999/03/05 15:16:48
+New export appended in each topology in the file "create.tml" -- 
+\get(_tname)_I=\get(tname)
+ 
+******************** revision 1.6 date: 1999/03/03 11:22:49
+New mechanism is added in "create.tml". 
+The macro \INTERNALMOMENTA(tname, topology, momentum1,momentum2, ...)
+can be used in "create.cnf" to set internal topology and momenta on internal 
+lines. When the undefined topology appeas to have the proper internal part,
+the corresponding set of momenta will be used to build topology.
+Example:
+\INTERNALMOMENTA( V,
+                  (1,2)(1,2)(1,3)(2,4)(4,5)(5,6)(6,3)(5,3),
+                  k1-q1,q1-k1,q2,q3,q4,q5,q6,q7    )
+The line and vertex substitutions will be exported just before the 
+corresponding topologies. Example:
+export top5__L="-6:7:5:-4:8:-3:-1:-2"
+export top5__V="1:5:6:2:4:3"
+topology top5_ =
+   (-2,2)(-1,1)(1,3)(1,4)(2,3)(2,5)(3,4)(4,6)(5,6)(5,6):
+      -q5,q6,q4,-q3,q7,-q2,-k1+q1,-q1+k1;
+These substitutions correspond to the connection between REDUCED and 
+internal topology. The user can use these substitutions in the operator
+"setinternaltopology", example:
+\setinternaltopology(\import(top5__L),\import(top5__V))
+-- sets internal part of the topology 
+(-2,2)(-1,1)(1,3)(1,4)(2,3)(2,5)(3,4)(4,6)(5,6)(5,6)
+( line numbering and directions) according to 
+(1,2)(1,2)(1,3)(2,4)(4,5)(5,6)(6,3)(5,3). Then the user can use operators 
+\u2i_line(\get(i))\i2u_line(\get(i))
+\u2i_vertex(\get(i))\i2u_vertex(\get(i))
+to translate numbers of user defined topology to internal and vice versa,
+and \u2i_sign(\get(i)) \i2u_sign(\get(i)) to obtain the correspodence between
+directions of the lines.
+
+Note, the macro INTERNALMOMENTA set in the SETMACRO in "create.tml"
+is user-invisible and it is differ from the user available macro with the 
+same name.
+ 
+******************** revision 1.5 date: 1999/02/03 11:47:19
+1. Bug fixed in basis.tml: _tmp_arg is cleaned befor building
+   the macro arguments. Nested macro now work correctly.
+2. Bug fixed in createsymmetry: \+ after opening temporary topology file.
+   (The same in "create.tml")
+ 
+******************** revision 1.4 date: 1999/01/28 07:46:51
+1. The macro \integrand() is changed so it does not add trailing ";".
+   Attention! Now it leaves \onleadingspaces!
+2. New mechanism is inserted into folders.tml. The user can 
+   use the preprocessor variable "foldername" to set the name of
+   the folder. The default is "n". The user may set it in his create 
+   file -- it will be inherited by the created config files.
+   And, the user can use the macro \breakfolder(name) to insert new 
+   folder in his program.
+
+3. The style "create.tml" now checks the existing files defined by 
+   the preprocessor variable "_FILELIST", so the other styles
+   can add new files to check by meanse of \PUSHQ(_FILELIST)(newname).
+ 
+******************** revision 1.3 date: 1999/01/26 15:01:02
+1. Define \Logo -- just prints the text at the beginning of the
+output section (in the file sections.tml and folders.tml).
+It prints the text in the output file only ones.
+The user can overwrite this define in his program, or just undefine it:
+\DEF(Logo)the text \ENDDEF
+2. Define \OUTPUTHEADER prints the text after Logo in the output section
+evry time when the output section occurs. The ctreatesymmetry.tml uses this
+macro to force weights insertions.
+3. Defile \OUTPUTEPILOG prints the text before the output file is closed.
+The createsymmetry.tml uses it for prepare all information for 
+further weights insertion.
+4. Folders.tml inserts headers of each section automatically
+*--#[ nN: And, it inserts the end of the folder *--#] nN:
+by redefinition of the _E_output
+
+5. New mechanism at the file createsymmetry.tml is added.
+The option 'unique' will force to skip all of the repeated 
+diagrams. 
+The option 'skipzero'will force to skip all zero diagrams. 
+The option 'weight' will force to add the define 
+DiaWeight to the output file. WARNING! This uses the new 
+Diana's operators writetofile and flush!
+
+6.The createsymmetry.tml changed to correct working with
+undefined topologies.
+
+7. Verification of the existing files now are set in the beginning of 
+the _BB_program in create.tml
+
+8. The following preprocessor variables can be defined by the user 
+   using create.tml to change the default values placed in settings:
+
+   NUMBEROFFUNCTIONS NUMBEROFCOMMUTING NUMBEROFVECTORS NUMBEROFTOPOLOGIES
+   NUMBEROFPROTOTYPES NUMBEROFID NUMBEROFVARIABLES NUMBEROFEXPORTS
+   When createsymmetry.tml is used, the variable NUMBEROFEXPORTS
+   is set automatically to 4*<number of diagrams>
+
+9. The pictures are added to the 2 loop propagator: the file
+2point2loop.pic
+10. New Oleg's model is added: file sm.mu-decay
+
+ 
+******************** revision 1.2 date: 1999/01/20 15:41:00
+1. The \Begin(header) ... \End(header) is added in the create.tml
+   If it is present, the program will not add the standard header 
+   ( debug on, log file and so on) into the beginning of the 
+   generated config file.
+
+
+2. Many bugs fixed. New operator _modesave() and _moderestore()
+   used in some begin-end environment. New bugs may appear...
+   The environment Begin-End now more regular works with modas:
+   they preserve modes outside the environment.
+
+
+
+ 
+******************** revision 1.1 date: 1999/01/18 16:50:34
+The first edition of the createsymmetry.tml.
+Now we will try to do some things.

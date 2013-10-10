@@ -1,0 +1,1691 @@
+Log:
+ 
+******************** revision 2.36 date: 2005/06/17 11:11:33
+27.05.2004:
+User transparent: change clock() to getrusage in calculation 
+of the totaal elapsed time. Note, tml timers still use clock()!
+
+02.12.2004:
+User transparent: possible buffer and integer overflow in 
+utils.c:long2str fixed.
+
+08.12.2004:
+User transparent: some cleaning of signed/unsigned integer conversions in 
+rexec.c and macro.c
+
+16.06.2005
+Bug is fixed (file tools.c, function sc_init()):
+First \gettoken() after \scannerinit() may fail, if
+\scannerinit() is performed after \scannerdone() was invoked 
+in the middle of the scanned line.
+ 
+******************** revision 2.35 date: 2003/08/22 15:29:47
+***************Forgotten in Readme for 2.32:
+
+New operator \killServers kills all the DIANA servers running.
+Returns empty stringon success, or "none" if fails.
+
+Command line options:
+   -C|-client : Fork out client for jobs queueing at start. This minimizes
+     overhead for fork at first _exec()
+   -smp #1[,#2] - ("smp" stays for SymmetricMultiProcessing) - start #1 local 
+     handlers of nice #2 (default nice is 0)
+   -s|-server #1[,#2] - tells DIANA to run a server listening some
+     port accepting  #1 connections with a nice #2 ((default nice is 1)
+   -d|-daemon #1[,#2] - tells DIANA to fork out a daemon listening some
+     port accepting  #1 connections with a nice #2 ((default nice is 1)
+*****************************
+
+Bug is fixed: \killServers() - formerly did not kill started servers if client 
+is not activated, i.e., if there where no _exec() calls.
+
+Bug-like feature is fixed:
+in the model description, expansion of the "vec" keyword of the form
+vec{vector} (or vec:#{vector} for vertices) allows vector in {} to be started 
+from '!'. If the vector is started from '!' it assumes that this momentum is NOT 
+required, example:
+Suppose, some gluon propagator will be created according to the model description
+[g,g   ;g; VV(num,ind:1 ,ind:2, vec, 3)*i_ ;0]
+as follows:
+VV(3,mu4,mu5,+k1+q+p,3)*i_
+
+Changing the model:
+[g,g   ;g; VV(num,ind:1 ,ind:2 ,vec{!p}, vec{p},3)*i_ ;0]
+
+we obtain the following:
+VV(3,mu4,mu5,+k1+q,+p,3)*i_
+
+In previous versions, the vector started with "!" was not allowed.
+Now is fixed.
+
+Bug is fixed: when different sub-momenta for the same particles in a vertex required,
+the output becomes broken, e.g.:
+[g,g,g;; V(num,vec:1{p},vec:1{q} ...
+Now is fixed.
+
+Bug is fixed:
+the operator \allVectors() now returns all vectors appearing not ONLY in a working 
+table but also IN THE MODEL (in the form discussed above).
+
+New preprocessor directive
+\GETENV(thename) returns a content of the environment variable thename
+
+New operators:
+
+\rmExtLeg(n) mark the external leg number n to be removed by operators 
+\amputatedTopology() and \amputateTopology()
+
+\amputatedTopology(varname) creates and returns topology with amputatred 
+external legs. Creates local variables:
+<varname>_IN - number of internal lines in a newly created amputated topology.
+
+The following arrays amputated[original] are indices of line of amputated
+topology which corresponds to original ones. Absolute value is an index, sign 
+corresponds to direction:
+<varname>_E - external line of original <-> exetrnal line of amputated 
+<varname>_IE   internal line of original <-> internal line of amputated
+<varname>_I internal line of original <-> exetrnal line of amputated
+
+\amputateTopology(varname,tablename) tries to find an amputated current 
+topology in the table "tablename" and returns it. It adds all momenta 
+from the table topolgy to momenta of current topology and save the
+result to the local variable <varname>_M. On failure returns an 
+empty sring. If it can't load the table it halts a program. Creates local 
+variables:
+<varname>_IN - number of internal lines in the amputated topology.
+<varname>_N - name of the found topology
+<varname>_M sum of momenta from the current topology and from the table 
+topology.
+
+The following arrays amputated[original] are indices of line of amputated
+topology which corresponds to original. Absolute value is an index, sign 
+corresponds to direction:
+<varname>_E - external line of original <-> exetrnal line of amputated 
+<varname>_IE   internal line of original <-> internal line of amputated
+<varname>_I internal line of original <-> exetrnal line of amputated
+
+Operator \linemarks(l) is changed: now it accepts l<0 - if it is external line, 
+it will just repeat it as is.
+
+User transparent: Removed b_free() from tools.c
+
+New operators:
+
+\extD2Q(n) (if n<0) maps Diana numbering of external legs to QGRAF
+model. If n>0, it just returns n. If n==0, returns an empty string.
+   QGRAF numerates external legs as follows: INgoing legs have odd
+numbers like -1,-3,-5, etc.  OUTgoing legs have even numbers like
+-2,-4, etc.
+   Diana numerates external legs as follows:
+First, ingoing legs in natural order e.g.:
+-1,-2
+then outgoing legs:
+-3,-4
+
+\vertexInfo(v,root) returns number of tails coinciding this
+vertex. Sets local variables: rootv1,rootv2,etc., rootl1,rootl2,etc.
+where rootv# is an identifier of the corresponding particle and rootl#
+is the line number (nusr, see the comment "The substitutions map" in
+variabls.h)
+
+\qsort(strings,newseparator) sorts 'strings'
+lexicographically. Assumes that 'strings' is an array of strings
+separated by a symbol ':'. After sorting it returns the result as
+array of strings separated by a charater 'newseparator'.
+
+!!! Attention !!!
+The core part of the debugger is written. It works, but in current version 
+it is not completed. The syntax WILL BE CHANGED in future versions!
+It is strongly recommended to compile the current version with the option 
+-DNO_DEBUGGER
+!!!!
+
+Changing the model extensions for plotting:
+1. New line type for propagator - "nothing". This means nothing will be drawn.
+2. Empty particle image now means really nothing - in previous versions, 
+this was the default image. 
+Example: the following string in the model:
+[le,Le;l; FF(num,fnum,vec, mle)*i_; mmle; nothing,0,0;]
+ - the information about the line will not appear in the picture.
+
+ 
+******************** revision 2.34 date: 2003/02/19 16:19:34
+Order of fermion interaction is allowed to be only 2. 
+In earlier versions 4-6-... fermion interactions lead to crash.
+
+Minor bug is fixed: formerly the following syntax led to an error:
+coordinates u10_ =
+   iv :
+   ivl :
+   il :
+   ill ;
+Now is ok, coordinates are not defined.
+
+License is changed: only version 2 of GPL is allowed.
+
+Coinciding lines are sorted so that the "less" line will be
+upper. "less" means that: or "type" of line is less, or, if types are
+coinciding, the number in the array (order of declaration of the
+particle in the model) is less. Now  added: switch off/on sorting by
+type setting  
+sortlinesbytype disable
+or 
+sortlinesbytype enable
+in the configuration file
+
+Automatic momenta distribution algorithm is changed:
+To backward compatibility with old versions:
+When loop momenta are not specified, the algorithm just set vectors consequently
+to lines (e.g. \vectors(p1,p2,p3,p4,p5,p6) => p1 on line1, p2 on line 2, etc.).
+
+
+ 
+******************** revision 2.33 date: 2003/01/05 17:34:07
+Bugfix:
+
+In the previous version, client failed starting directly from the 
+operator \_exec() 
+******************** revision 2.32 date: 2003/01/04 20:12:27
+get_num was affected by a buffer overflow in case of too long number. 
+Now it is fixed, but the result is unpredictable (the number 
+converted by too long string)
+
+Parallelization  and some others.
+
+New preprocessor directives :
+\RMARG(#) - forget about the command line argument "number #"
+\{ - remove spaces from squeezeable characters in hash mode
+\} - restore spaces from squeezeable characters in hash mode
+
+New operators:
+
+\int2hex(int,width) - converts integer decimal reprezentation of int into hexadecimal.
+width is a width of the result (it will be left-padded by zeroes), if width <1,        
+then the width will be calculated.
+
+\hex2int(hex) - converts hexadecimal reprezentation into decimal.
+
+\pingServer(ip) checks is DIANA server available on a given IP address.
+The argument ip is an IP address in standard dot notation. Returns
+alive if the serever responds, or an empty string, if the server
+can't be found or does not respond the ping.
+
+\killServer(ip) kills the DIANA server running on a given IP address.
+The argument ip is an IP address in standard dot notation. Returns
+ok on success, or an empty string if fails.
+
+\lastjobname() returns the name of the last job started by the
+operator \_exec()
+
+\lastjobnumber() returns the order number of the last job started by
+the operator \_exec()
+
+\_execattr(attr,par) - attr - 32 symbols corresponding exec attribytes.
+ 0 - clear, 1 - rise up, anythihg else - leave it as is. If attr is longer
+ then 32, ignore the rest. If shorter, assume the tail is "leave as is".
+    The second argument are possible parameters. Parameters may be separated
+ by \eof(). They will be cycled around all set attributes requiring a parameter,
+ e.g. \_execattr(1!011,255\eof()10) - the fourth attribute will get a parameter
+ "255", the fifth attribute will get a parameter "10" (since the first does not
+ require parametes, and the second is not set). Another example:
+ \_execattr(10011,10) - both fourth and fifth attrs. will get "10".
+ The operator returns an empty string.
+                       
+ At present, the following attrs. are used:
+ 0  SYNC_JOB_T - must be performed after all previously started jobs finish
+ 2  STICKY_JOB_T - must be performed at the same handler as job to stick was
+ 4  FAIL_STICKY_JOB_T - fail if job to stick failed
+ 8  ERRORLEVEL_JOB_T - 0--255 - success if errlevel <=; -1 (default) -
+                success if finished, -2 - success if started
+ 16 RESTART_JOB_T - number of job restarts if files, 0 if not set up
+
+\killServer(ip) kills the DIANA server running on a given IP address.
+The argument ip is an IP address in standard dot notation. Returns
+ok on success, or an empty string if fails.
+
+\whichIP(jobname) returns IP as 8 hexadecimal digits or an empty
+string if fails.
+
+\rmjob(jobname) remove the named job. Returns an empty string
+
+\whichPID(jobname) returns PID as a HEX number or "" if failed|undifined
+
+\getnametostick(jobname) returns the name of the "master" job to
+which the specified "sticky" job jobname has to stick. If fails,
+returns an empty string.
+
+\jobtime(jobname) returns 8 HEX digits, running time in millisecs
+
+\jobstime(jobname) returns 8 HEX digits, starting time in millisecs
+
+\jobftime(jobname) returns 8 HEX digits, finishing time in millisecs
+
+\failedN() returns number of failed jobs, or an empty string, if fails
+
+\clearjobs() clears all jobs. Returns an empty string on success,
+or the string "Client is died."
+
+\jobhits(jobname) returns 6 HEX digits, hitTimeout, hitFail ,placement
+(JOBS_Q 1, SYNCH_JOBS_Q 2, FINISHED_JOBS_Q 3, FAILED_JOBS_Q 4, RUNNING_JOBS_Q 5,
+PIPELINE_Q 6, STICKY_PIPELINE_Q 7)
+
+\jobstatus(jobname) returns 8 HEX digits, see a comment to 2pFIN, rproto.h
+
+\startjobtimeout(#) sets timeout to start a job (millisecs). After
+timeout is expired, if the job is not running, it will be moved to
+another handler, if a 
+total number of timeout hits <rexec.c::MAX_HIT_START_TIMEOUT.  
+If >, the job fails. Time accounted
+starting from the moment of the job is send to the remote (or local)
+server.  Returns previous value of the timeout, or empty string if
+fails.
+
+\connecttimeout(#) sets timeout to connect with a remote server (millisecs).
+Returns previous value of the timeout, or empty string if fails.
+
+\sendsig(jobname,signal)
+Returns an empty string on sucess; on fail returns:
+"10" - job is not run' by a the client; "20" - can't read a signal from Diana;
+<10:
+          01 - An invalid signal was specified.
+          02 - The pid or process group does not exist.
+          03 - The  process  does  not have permission to send the signal
+          04 - Unknown error.
+
+\hex2sig(sig) converts DIANA's internal signals hexadecimal representation
+to local system ones (decimal numbers)
+\tracejobson(filename) - starts jobs tracing into files (filename.var filename.nam),
+   returns an empty string. If client is not running, nothig happen. If tracing is already
+   in progress, nothing happen. Actually, tracing will start at first \_exec(). If
+   one \_exec() is already occured, nothing happen.
+              
+  For each newly started job, the following line will be placed in the
+  file filename.nam:
+    No Name Cmdline
+  Here No is the order number of the job,
+  Name is the job name,
+  Cmdline is a  structure:"XXXXxxx...XXxxx... ..."
+  where first two characters XX are the HEX representation of the number of arguments (n),
+  and the rest is the  repeated n times construction XXxxx..., where first two
+  characters XX are the HEX representation of the length of an argument, and xxx... is
+  the argument. Example: "ls -l" will be represented as "0202ls02-l"
+              
+  The file filename.var contains one line per each job:
+  X XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XX XX XX XX XXXXXXXX
+  where space-separated fields are:
+  X(1)        - HEX number, current placement:
+                 1 - in the initial asynchronous queue,
+                 2 - in the initial synchronous queue,
+                 3 - finished jobs.
+                 4 - failed jobs,
+                 5 - running jobs,
+                 6 - non-sticky pipeline,
+                 7 - sticky pipeline.
+  XXXXXXXX(8) - return code, 8 HEX digits:
+                XX  : if normal exit, then the first two digits repersents exit()
+                      argument (in HEX notation), otherwise 00,
+                XX  : 00 - notmal exit, 01 - non-caught signal, 02 - the job was not run,
+                      03 - no such a job, 04 - job is finished, but status is lost (often
+                      occur after debugger detached), otherwise - ff,
+                XXXX: - signal number (if previous was 01), otherwise - 0000. If signal
+                   is unknown for Diana (see int2sig.c), it will be  0000.
+  XXXXXXXX(8) - IP  (in HEX notation).
+  XXXXXXXX(8) - PID (in HEX notation).
+  XXXXXXXX(8) - attributes ("type") - HEX representation of binary flags
+  XX(2)       - (HEX) timeout hits - how many times the job failed due to a start timeout
+  XX(2)       - (HEX) fail hits - how many times the job fails (except start timeouts).
+  XX(2)       - (HEX) max fail hits - maximal number of job retarts.
+  XX(2)       - (HEX) errorlevel, or "-1", or "-2".
+  XXXXXXXX(8) - (HEX) address of a corresponding line in the file filename.nam.
+
+\tracejobsoff() ceases tracing. Returns an empty string.
+Aster it is stopped, tracing can't be continued until clearing all jobs by
+means of the operator \clearjobs()
+
+\getJobInfo(jobn, format) returns information about a job number
+jobn, formatted according to format. The latter is a string of
+type n1/w1:...nn/wn' where n# is a field number and w#
+is its width.  If w# >0, then the text in the field will be right
+justified and padded on the left with blanks. If w#<0, then the text
+in the field will be left justified and padded on the right with blanks.
+If w#=0, then the width of the field will be of the text length.
+Here is a complete list of all available fields:
+1 current placement, see above;
+2 return code, 8 hexadecimal digits, see above;
+3 IP address (in dot notation);
+4 PID (decimal number);
+5 attributes (decimal integer);
+6 timeout hits (decimal number), see above;
+7 fail hits (decimal number), see above;
+8 max fail hits (decimal number), see above;
+9 errorlevel (decimal number), see above;
+10 the job name;
+11 number of command line arguments;
+12 all command line arguments startind from a second one (spaces separated);
+13 all command line arguments starting from a third one (spaces separated);
+14 all command line arguments starting from a fourth one (spaces separated).
+If the number is zero or negative, then its absolute value treats of a single
+command line argument. Example:
+\getJobInfo(1, 4/10:3/15)
+returns PID of the external program of the first job and IP address of the
+computer on which the job runs. PID will be returned as a decimal number
+padded by spaces on the left to fit a field of width 10, and IP will be
+returned in dot notation padded by spaces on the left to fit a field of
+width 15.
+
+\_exec(name, attr, param)
+where name is the job name and attr and param are the
+same as the above mentioned \_execattr() arguments.  The first
+argument, name, must be unique. It is recommended to leave it empty,
+then the name for the job will be assigned automatically.
+
+The second and third arguments will be joined with the default attributes set
+up by the \_execattr() operator only for executing the job queued by
+the operator \_exec(), so they will not affect the default
+attributes.
+
+\getip(host.domain) or \getip() - tries to find the current host IP,
+if the argument is "", otherwise it determines the IP of named host
+
+\_waitall(timeout), waits for all executing jobs will be finished,                   
+  or until timeout (millisecs) is expiried. If timeout<0, waits for infinity.          
+  Returns empty string( if all jobs are finished before timeout) ot number             
+  of active jobs. If it was interruted by information from the pipe                    
+  (see \setpipeforwait()), the output is prepended by '-'
+
+\random(A,B) - returns random integer between A and B
+
+\cut(string,n) returns field of index n, n started from 1, fields are separated arbitrary
+numbers of spaces
+
+\pad(str,len) formats str to fit a field of length len.
+If len >0, then the text in the field will be right
+justified and padded on the left with blanks. If len<0, then the text
+in the field will be left justified and padded on the right with blanks.
+If the length of str is larger than len, then str will be truncated.
+\bitwise(A, op, B) returns result of bitwise operation between integers A and B 
+(A may be omitted for unary operation "not"):
+  \bitwise(A,and,B)                         
+  \bitwise(A,or,B)                          
+  \bitwise(A,xor,B)                         
+  \bitwise(,not,B)                          
+  \bitwise(A,nand,B)                        
+  \bitwise(A,nor,B)                         
+  \bitwise(A,nxor,B)                        
+  \bitwise(A,xorn,B)
+  \bitwise(A,andn,B)
+  \bitwise(A,orn,B)
+  \bitwise(A,nop,B)
+
+\pipe(cmd) - starts a command cmd and returns its PID. The command runs in a shell,
+stdin/stdout are kept internally. See \frompipe(), \topipe(), \checkpipe(), \closepipe()
+\setpipeforwait(pipe): The operator \_waitall() returns the control if there are no more
+running jobs, or if the timeout is expired. But, there is third possibility.
+The operator will return the control if some information is available on
+some definite pipe. The pipe must be set up by means of the operator
+\setpipeforwait(pipe), where pipe is the PID returned by the
+operator \pipe(), or 0. In the latter case the operator
+\_waitall() will return the control if there is something typed on
+the keyboard
+
+\getpipeforwait() returns PID of the pipe which has been set by \setpipeforwait(pipe),
+or an empty string, if there is no active pipe for \_waitall()
+
+\checkpipe(pipe,signum) - send a signal to a pipe. If pipe <=0, do nothing.
+ If signum <1 then it assumed to be 0
+
+\closepipe(pipe)(here pipe is the PID of the external
+program returned by \pipe()) terminates the external program. It
+closes the programs' IO channels, sends to the program a KILL
+signal
+
+\ispipeready(pipe) returns "ok", if \frompipe() will not block, othervise returns ""
+
+\frompipe(pipe) reads partially ready lines. It stops reading if the line is completed,
+at the end-of-file condition, or if there is no more data available in the pipe.
+
+\linefrompipe(pipe) reads from the pipe and return a
+whole line.
+
+\topipe(pipe,text) writes text to the pipe as is.
+
+\linetopipe(pipe,text) appends a new line symbol to the text placed into the pipe.
+
+ 
+ 
+******************** revision 2.31 date: 2002/11/03 17:52:31
+Diana 2.31:
+*******************************************
+In Dubna, porting to SPARK, baugs are fixed:
+comdef.h:
+#define ONLY_ELEMENTARY_LOOP_MOMENTA 1; ->
+#define ONLY_ELEMENTARY_LOOP_MOMENTA 1
+
+macro.c:
+if(   fputs()<=0 )goto fail_write; ->
+if(   fputs()<0 )goto fail_write;
+
+c++ - style comment:
+tt_type.h:
+76c76
+< /*#define TT_BOTHMOMENTAANDSHAPE "both"*/
+---
+> //#define TT_BOTHMOMENTAANDSHAPE "both"
+
+Postscript header was not outputted in big-endian systems 
+like Solaris SPARC (on little-endian systems was ok):
+utils.c:
+992c992
+<    char ch;
+---
+>    int ch;
+*************************************************
+Bug is fixed: 
+The following situation: 
+1) momenta come from a full topology table; 2) direction of line in the table is 
+opposite "reduced" direction. 
+Then the direction of momentum was wrong.
+
+Operators 
+\momentum(line,vec) and \vectorOnLine(line,vec)
+are extended:
+If the vec is started from '!', it assumes that this momentum is NOT required,
+and if the vec is started from '-', then the direction of returned  momentum will be 
+changed. If both '-' and '!' are present, the order MUST be the following: first, 
+'-', and then '!' (e.g. \momentum(2,-!q) will return all terms without q, directed 
+opposite the  momentum on the line 2, while \momentum(2,!-q) is an error).
+
+Operators
+\_PDiaImages(), \_PAllImages(), \_PImage(), \parseParticleImage()
+were changed so that in the function \setparticleimage(paricleid,image)
+the 'particleid' argument can be not onl a particle id, but also some line mark.
+E.g.:
+\setparticleimage(-3  ,{f(Times-Roman)(14)B})
+sets the image for third external line.
+
+Names for topologies from table are constructed differently, trying to keep
+a name from a table. They are built in such a way:
+First, the name from the table is tried. If it exists, then:
+   If it is unique, it will used.
+   Else it will be appended by _f<ntbl> for full table or _i<ntbl>
+   for internal table.
+If the original name does not exists, or empty, the name
+f<ntbl> for full table or i<ntbl> for internal table will be created.
+The constructed name will be appended by 1,2,3... until it becomes unique.
+Here <ntbl> is the number of the topology table.
+NOTE: names are bound to MOMENTA tables!
+ 
+******************** revision 2.30 date: 2002/06/21 15:49:27
+Bugs are fixed:
+
+1. Positive direction of momentum on a majorana propagator must coincide 
+with the direction of fermion number flow, while it was unspecified. 
+Now is fixed. 
+
+2. Positive direction of momentum of fermionic external legs must me 
+in agreement with the direction of fermion number flow while it was 
++ for ingoing and - for outgoing. Now is fixed.
+NOTE: if flip  majorana = enable then momenta will be flipped for fermionic 
+external legs, too, if the dirac propagator direction is opposite to the 
+choosen fermion number flow!
+
+Bug-like feature:
+When majorana particles may appear, the user can't specify external spinors 
+on the basis of a topology. To let the user be able to correctly multiply 
+the expression by the external spinors, two operators were developed:
+\rightspinor(#) -  returns index of
+  external line (negative!) which is # left  multiplier. If returned value is 0,
+  then there is no corresponding fermion external leg;
+\leftspinor(#) -  returns index of
+  external line (negative!) which is # left  multiplier. If returned value is 0,
+  then there is no corresponding fermion external leg;
+E.g., \leftspinor(1)= -3; \leftspinor(2)= -2; \leftspinor(3)= 0;
+     \rightspinor(1) = -4 \rightspinor(2) = -1; \rightspinor(3)= 0;
+  means that the integrand must by multiplied by external spinors (ext(#), where #
+  is the external line number, -1...-4) in such a manner:
+     ext(-3)*ext(-2)* integrand *ext(-4)*ext(-1)
+Note, that arguments \leftspinor() and \rightspinor() will coincide with the 
+fermion line number.
+
+Maximal input string length was tools.h:MAX_NAME_LENGTH = 255
+Now it is increased to SCAN_BUF_SIZE = 1024
+
+More rigorous number control reading configuration/model:
+e.g., formerly
+[l,f,Wp;; lfWp(ind:3vec:1,vec:2)] -> lfWp(mu:1,k1)
+while now:
+***ERROR***
+Number expected instead of '3vec'.
+Scanner is active: file:'settings.try' line:2937 col:23
+[l,f,Wp;; lfWp(ind:3vec:1,vec:2)]
+                      ^
+New preprocessor directives :
+ \[ - switch on "forced" hash mode
+and
+ \] - switch off "forced" hash mode.
+In forced hash mode Diana will squeeze all spaces including tabulars and 
+end of line characters.
+ 
+ 
+******************** revision 2.29 date: 2002/04/29 17:07:25
+New mechanism for automatic momenta distributing:
+
+The configuration file directive "chord [+-][id]" forces Diana to replies the 
+rest of chords (except loop part) by +/- id#, where # is the line index.
+The proper topology remarks generated automatically. Example:
+chord -c;
+leads to the following effect:
+topology u1_=(-4,2)(-3,2)(-2,1)(-1,1)(1,3)(4,2)(4,3)(3,4):              
+   [-p3,-p2,+p4,+p1]+p4+p1,-p3-p2,-c3+k,+k;              
+       remarks u1_=                 
+       Q3 = c3:                             
+       P3 = +p4+p1:                                
+       NDEF = 1;
+The configuration file directive "bridge[+-][id]" forces Diana to replies
+the contents of bridges by +/- id#, where # is the line index.
+The proper topology remarks generated automatically. Example:
+chord -c;
+bridge -b;
+leads to the following effect:
+topology u1_=(-4,2)(-3,2)(-2,1)(-1,1)(1,3)(4,2)(4,3)(3,4):              
+   [-p3,-p2,+p4,+p1]-b1,-b2,-c3+k,+k;              
+      remarks u1_=                 
+         Q1 = b1:                 
+         P1 = -p4-p1:                    
+         Q2 = b2:                       
+         P2 = +p3+p2:                          
+         Q3 = c3:                             
+         P3 = +p4+p1:                                
+         NDEF = 3;
+
+Empty content (e.g.: chord -c; bridge -b; chord;) cancels substituting.
+
+
+Operator \momentum(line,vec) corrected - now it does exactly which it must
+do, namely it returns exactly the same text as it would be used in
+propagators.
+
+For drawing, now there is a new operator, differs from \momentum only by a
+sign:
+\vectorOnLine(line,vec)" -- returns
+   momentum on line l corresponding to vector vec. If vec is empty,
+   returns full momentum. Returned value is directed along the nusr line
+
+ 
+******************** revision 2.28 date: 2002/04/18 10:44:01
+Bug is fixed:
+   Maximal Y coordinate of a picture were defined incorrectly, when a tadpole
+   occurs at the top.
+Bug is fixed:
+   Full topology table entry for pure topologies faild exporting momenta.
+   Fixed.
+Bug is fixed:
+   Full topology table entry for pure topologies ignore provided shape. Fixed.
+Bug is fixed:
+   Crush at momenta balance checking if zero momentum is undefined. Fixed.
+			
+New preprocessor directives:
+  \VERSION returns the current revision number
+  \MINVERSION( ) accepts a revision number of a form maj[.min[app]]
+  where maj and min are numbers while app is some text(not digits!)
+  This directive generates an error if its argument is GREATER then the current 
+  Diana revision number.
+
+Operator \expTopLoopMark(filename) saves topologies with automatically distributed 
+   momenta into a named file.  Returns number of saved topologies.
+
+Operator \loadLoopMarks(filename)  Returns number of successfully processed topologies.
+  Every loaded topology must contain the remark "t" which is equal to the number of
+  the topology which it represents, otherwise it will be ignored
+
+Model is extended to support particle images.
+  Optionally - after a line type, ';' and particle image.
+  The particle image is the text with possible modifications, e.g.:
+   W{y(10){f(Symbol)(8)a}}  -> $W^\alpha$ (in TeX notations!  Actually will be outputted
+  in PS notations.)
+  Example:
+  [Wm,Wp ;W; VP(num,ind:2 ,ind:1 ,vec, 2)*i_ ;mmW] - the line will be (default) - solid
+  arrowed line, the particle image will be 'Wm'
+  [Wm,Wp ;W; VP(num,ind:2 ,ind:1 ,vec, 2)*i_ ;mmW; arrowWavy, 3, 2;W{y(5)-}] - the line 
+  will be of a photon-like curve of a width 2 and amplitude 3, and the particle image will 
+  be '$W^-$' (in TeX notation)
+   All modifications are local agains block. Block is started by: '{' and floolwed one 
+   of a keyword with possible parameters in parenthesis:
+   {x(#) ... } - paints the content with shift along x. After the block, the current point
+                is set to (old x, new y)
+   {y(#) ... } - paints the content with shift along y. After the block, the current point
+                is set to (new x, old y)
+   {xy(#)(#) ... } -  paints the content with shift along  both x and y. After the block, 
+                the current point is set to (old x, old y)
+   {f(fontname)(#) ... } set font "fontname" scaled by # (in 1/multiplier fractions
+                of the current font size)
+   {s(#) ... } - scale current font by # (in 1/multiplier fractions of the current font 
+                size)
+   {c(#)(#)(#) ... }  set RGB color
+    All sizes are in 1/10 fractions of the base font size, i.e. "10" means the size of the 
+   current font, "20" is twice bigger, "5" is a  half size. 
+
+Operator \parseParticleImage(particle,string) converts Diana-specific string into a PS form
+ described above. show is the PS command to paint a string,  fsize is the base font size.
+ All sizes are in 1/10 fractions of fsize.
+
+Operators \_PImage(l,id),\_PDocFonts(id),\_PDiaImages(formatstring),
+  \_PAllImages(formatstring) are FOR INTERNAL USE ONLY! - see comments in macro.c.
+  ATTENTION! Some of thess operators output several lines to standart output stream!
+	
+The behaviour of the operator \isinteger(n) is changed: now it returns "false" it 
+there is invalid character somewhere. Formerly, it assumes e.g. 123abc is 123 and returns
+"true" while now it returns "false" due to "abc".
+
+New operator \isfloat(n)  returns "true", if n is a float number. If not, it returns 
+"false".
+
+Operator \createMomentaTable(var,format) is changed:
+  sets local variables var1...varN according to topology remarks P1 ... PN, Q1 ... QN
+  and var0 is the number of created variables. Returns this number. If returned
+  number is 0, then the local variables are NOT created. The string "format"
+  must be a valid format line containg two '%s' specifiers, or be an empty line.
+  In latter case the default value (#define %s "(%s)") will be used AND other variables,
+  (var'P#',#) will be created.
+
+Behaviour of special remarks Q# is changed: now they can include arbitrary
+valid text identifiers, with possible tokens concluded into {}.
+
+New type of special remarks appear Qe# They may consist of one signed digit.
+This digit means the index of the corresponding external vector. If the
+vector can not be the left-hand #define argument, the corresponding remarks
+is ignored.
+
+Behaviour of special remarks P# is changed: when they are connected with 
+Qe#, the common sign of P# may be changed so that the left-hand #define
+argument (Qe#) will be signless.
+
+ 
+******************** revision 2.27 date: 2002/02/23 19:59:14
+Bugs are fixed:
+1. The user specified unique topology names may conflict with the automatically  
+   generated ones in case if the user will use the same name as automatical.
+   To resolve the conflict, "A#" will be added to automatically generated names 
+   (here # is some  number).
+2. If the additional (not unique) topology name coincides with the unique topology 
+   name of one of already defined topologies, it overrides this unique name. This 
+   means that coordinates/line/vertexmarks/remarks will relates to a wrong topology!
+   Now is fixed.
+
+Bug is fixed: when the value of the lats command line option is not specified, 
+   the program crashed. Now is fixed.
+
+User transparently: The stupid variable ext2my is removed.
+
+New command line option:
+   -vt a|f|t  : Check momenta balance on topologies, 
+        a - check all and if at least one vertices is unbalanced halt afterward;
+        f - halt at first occured unbalanced vertex;
+        t (through) - just warning each time a vertex is unbalanced.
+
+New: \wasAbstractMomenta() returns "yes" if at least one abstract momentum was saved
+during the last \saveTopologies(). Otherwise, returns ""
+
+Bug is fixed: at some condition the program chashed on fail. Not dangerous, 
+the execution is failed, anyway
+Conditions are: 
+  TML program consists in one main program, i.e., no any TML functions;
+  Translation was performed successively, but BEFOR the first run somethin 
+  was happen, and Diana failed, e.g., QGRAF file appears to be corrupted.
+
+Cfg directive
+topology table "thename"
+is extended. Now it is possible to use two additional directives:
+topology momentatable "thename"
+and 
+topology shapetable "thename"
+
+In the topology table: new directive, in the beginning of the file:
+momentaorshape = momenta|shape|somethingelse
+where somethingelse is something else then momenta or shape
+
+And, now the information on the shape can be extracted from the tables without momenta, 
+and vice versa correctly (formerly wese some incorrections).
+
+If a topology exports momenta from some table, it's line directions now are adjusted 
+so that it has the same  textual momenta as in the source table topology.
+
+ 
+******************** revision 2.26 date: 2002/01/20 19:03:13
+Bug is fixed:
+preprocessor directives \GET() and \CMDLINE() were non-reenterable.
+When they appeared into an argument of anothe macro, and were undefined,
+they return their argument instaed of en empty string.
+
+New operator
+\getenv(name)
+searches the environment list for a string that matches the string pointed
+to by name.  The strings are of the form name = value. Returns the value in
+the environment, or empty string if there is no match.
+							
+Bug is fixed:
+Translation table in the working topology table can be erased by the Topology editor.
+Now is fixed: DIANA adds this table in the operator \loadIntTable().
+
+User defined zero vector is used instead of "0" in operatos \momentum(), 
+\externalmomentum(), \momentatext() and expanding the keyword "vec".
+ 
+******************** revision 2.25 date: 2001/12/24 14:49:55
+directive "ignore table momenta" enable/disable (default disable)
+   if "enable", tebles will be used only to get coordinates.
+
+\wasMomentaTable() returns "yes" if at least one momenta comes from a table.
+  Otherwise, returns "".
+\isVectorPresent(vec) returns "yes" is the vector is defined, or "no".
+
+Internal tables, when loading, may relate only to the shape. To ignore
+provided momenta just set for the topology remark "NoMom", e.g.
+remark top1 = NoMom=;
+leads to ignoring momenta from this internal topology.
+
+\topologyisgotfrom() now returns:
+   automatic 
+      when momenta were distributed automatically,
+  generic
+      momenta come from generic topology
+  user
+      momenta were set up by the user
+  unspecified
+      otherwise
+
+
+The following two directives are used bu a system of automatic momenta distributing:
+
+Each entry must be a single vector:
+directive loop momenta = k1,k2,k3;
+
+This will be used as a zero vector:
+directive zero momentum = z+z1-z2;
+
+\dummyMomenta(var) --                                             
+  sets local variables var1...varN according to the contents of topology remarks 
+  Q1 ... QN  and var0 is the number of created variables. Returns this number. 
+  If returned  number is 0, then the local variables are NOT created.
+		
+\createMomentaTable(var,format) --
+  sets local variables var1...varN according to topology remarks P1 ... PN, Q1 ... QN
+  and var0 is the number of created variables. Returns this number. If returned
+  number is 0, then the local variables are NOT created. The string "format"
+  must be a valid format line containg two '%s' specifiers, or be an empty line.
+  In latter case the default value (#define %s "(%s)") will be used.
+		
+New directives in a configuration file:
+topology table "filename"
+    loads tt table from a named file.
+token loop="newname"
+external coordinates ev = "500.0,50.0,500"
+external coordinates evl = " ... "
+
+\saveTopologies(filename) saves topologies into a named file.
+  Returns number of saved topologies. 
+  Names for undefined topologies are built in such a way:
+     For those come from full topologies table
+        "f<ntbl>_<ntop>_#"
+     and for internal tables
+        "i<ntop>_#"
+     Here <ntbl> is the number of the topology table,
+     <ntop> is the number of the topology into the table (for internal topologies
+     this number is nothing but the index in wrk table!),
+     # is an order number.                                 
+\loadIntTbl(filename) loads wrk table from a named file.
+  Returns number of loaded topologies, or error code <0
+				
+\saveIntTbl(filename) saves wrk table (if present) into a named file.
+	 Returns number of saved topologies, or error code <0
+						
+\vectors() returns a comma-separated  list of all momenta id occuring in
+		current momenta set of a current topology. The returned string is formatted
+  to fit 80 columns.
+
+
+\allVectors() returns all vectors appearing in all topologies saved by 
+the operator \saveIntTbl(see above)
+
+behaviour of the directive 'vectors' is changed, now the user may provied
+several section 'vectors', and describe the same vectors more then one time.
+
+***** Forgotten in a previous Readme:
+Each of topology may be supplied by a set of "remarks".
+Reamarks are named strings.
+The user can set arbitrary "reemarks" by means of the directive "remarks".
+remarks <topname> = one=<one>:two=<two>,... ;
+Example:
+remarks A1_=first=rem1:second=rem2;
+*****
+ 
+******************** revision 2.24 date: 2001/10/15 18:31:31
+******** Switched off temporarily
+
+New directive in a configuration file:
+topology table "filename"
+loads tt table from a named file. 
+
+\saveTopologies(filename) saves topologies into a named file. 
+  Returns number of saved topologies.
+\loadIntTbl(filename) loads wrk table from a named file.
+  Returns number of loaded topologies, or error code <0
+		
+\saveIntTbl(filename) saves wrk table (if present) into a named file.
+  Returns number of saved topologies, or error code <0
+
+\vectors() returns a comma-separated  list of all momenta id occuring in 
+current momenta set of a current topology. The returned string is formatted
+to fit 80 columns.
+***************
+
+cmd line option -m {eEyY}/{dDnN} -- messages enabled/disabled
+
+\ttSave(filename, table) saves a table to specified file. 
+  Returns number of saved topologies, or error code <0, see tt_type.h
+
+\ttAppendToTable(fromTable, topol, toTable) -- adds topology "topol" from a table 
+   "fromTable" to the end of the table "toTable". Returns the index of added topology in 
+   the table  "toTable", or error
+   code <0.
+
+\ttNewTable() creates new (empty) table and returns identifier of the created table,
+  or error code < 0
+
+Directive in a topology table:
+numberoftokens=#
+re-allocates a hash table for translation tokens
+
+\nexp() returns number of global variables defined at the moment:*/
+\nvar() returns number of local variables defined at the moment:*/
+\sizeExp() returns the size of table of global variables. If it is less then
+  the number of defined variables, then an algorithm is inefficient:*/  
+\sizeVar() returns the size of table of local variables. If it is less then
+  the number of defined variables, then an algorithm is inefficient:*/  
+\resizeExp(n) resizes the table of global variables.
+  The new size 'n' must be a prime number not less then the number of defined variables.
+  If it is less then the number of defined variables, then an algorithm is inefficient
+  If n==0 then the operator clears the table. If n>0, it will be ceiled by a prime.
+  If it <0, then the new size -n will be used as is. Returns empty string:*/
+\resizeVar(n) resizes the table of local variables.
+  The new size 'n' must be a prime number not less then the number of defined variables.
+  If it is less then the number of defined variables, then an algorithm is inefficient
+  If n==0 then the operator clears the table. If n>0, it will be ceiled by a prime.
+  If it <0, then the new size -n will be used as is. Returns empty string:*/
+
+Now empty linemarks for pure vertex diagram are allowed.
+
+The behaviour of momenta under the negative lsubstitute is changed.
+momenta change together with the line directions, so logically momenta are not
+affected by changing of the direction, e.g.
+  ------->------  =>  -------<------
+        p1                  -p1
+To change the momenta directions the user must use alternative momenta set.
+
+To restore old behaviour the user can use the
+New directive in a configuration file:
+flip  momenta = enable|disable
+If enable, then the directons of momenta will flip under negative
+lsubstitutions. Default is "disable".
+
+
+"fnum" keyword in bosonic id's now always expanded to 0 (was maximal fnum)
+
+Majorana fields supported!!!
+
+New keyword in FORM identificator (deafult fflow, may be changed by
+the directive "fermion number flow = newkw" ) will be replaced by :
+'0',-1,+1, depending on co-incide fermion number flow with the fermion
+flow (+1), opposite (-1), or undefined (0). For vertices it will be
+-1, if at least one incedent line has (-1).
+
+New operators \linefflow(linenumbernumber) and \vertexfflow(vertexnumber) 
+return '0',-1,+1 depending on co-incide fermion number flow with the fermion 
+flow (+1), opposite (-1), or undefined (0). For vertices it will be -1, if 
+at least one incedent line has (-1).
+
+New directive in a configuration file:
+flip  majorana = enable|disable
+If enable, then the directons of propagators will flip if a fermion number flow is
+opposite to the Dirac direction. Default is "disable".
+
+\linefcount(l) now correctly works with external legs.
+
+Behaviour of the following operators is changed:
+
+topologyidreset
+noncurrenttopologyid
+numberofmomentaset
+topologyisgotfrom
+currentmomentaset
+numberoftopologyid
+currenttopologyid
+topologyid
+topology
+setinternaltopology
+canonicaltopology
+i2u_sign
+u2i_sign
+momentum
+momentatext
+setmomenta
+externalmomentum
+thiscoordinatesok
+vsubstitution
+lsubstitution
+invertline
+
+such that they can be used at the "last" time after setting
+current topology by means of the operator "setcurrenttopology".
+
+In addition, the following operators can be used at the "last" time after
+setting current topology by means of the operator "setcurrenttopology" 
+independently on re-setting any kind of topology/momenta parameters like
+topologyidreset, setmomenta etc.:
+momentum
+externalmomentum
+vsubstitution
+lsubstitution
+invertline
+
+register_macro("setcurrenttopology",1,isdebug,macsetcurrenttopology);                          
+register_macro("istopologyoccur",0,isdebug,macistopologyoccur);        
+
+Each of topology may be supplied bya set of "remarks".
+  Reamarks are named strings.
+\setTopolRem(name, text) -- sets value "text" to the remark of name "name" in current 
+topology. Returns previous value of a remark, or ""
+\getTopolRem(name) -- Returns the value of the remark of name "name" in current 
+  topology, or "", if there is no such a remark
+\killTopolRem(name) clears a named remark in current topology. Returns used 
+value of a remark, or "" if there is no such a remark:
+\valueOfTopolRem(num) -- returns the value of the remark number "num" of current topology,
+ or empty line. "num" is counted from 1
+\nameOfTopolRem(num) -- returns the name of the remark number "num" of
+current topology, or empty line. "num" is counted from 1.
+\howmanyTopolRem() -- returns number of remarks for current topology
+
+register_macro("numberoftopologies",0,0,macnumberoftopologies);
+register_macro("currenttopologynumber",0,isdebug,maccurrenttopologynumber);
+
+\fullcmdline() returns full command line Diana is invoked
+\syscmdparam(n) returns cmd line parameter number "n" passed to Diana,
+or empty string. In contrast to \cmdline(n) returning n cmd line passed to run.
+
+Algorithm of reduceing topologies to the canonical form is changed.
+PREVIUOS ONE WAS FAULTY!
+
+Bug or feature?? -- The maximal length of a string obtained from \GET
+preprocessor directive is increased from 253 to 1046
+
+\REALLOCINCLUDE(n) -- preprocessor directiove, increases maximum include depth
+(note, if current depth is more then n, nothin happens).
+
+\externalmomentum(line,vec) -- returns
+   momentum on external line l corresponding to vector vec. If vec is empty,        
+   returns full momentum. If extline<0 then extline=-extline.
+			All external momenta assumed to be ingoing
+			
+\isingoing(extline) -- returns "+","-" or ""
+   according ingoing,outgoing or no such external line. 
+			If extline<0 then extline=-extline
+
+Elapsed time now changed to the user time.
+
+New operator \subst2dir(2:-1:3:-4) returns +-+-
+New operator  \delete(str,chars) -- delete all characters of 'str' matches 'chars'
+
+
+System clock is available. Up to 10 independent clocks!
+\clocksetactive(n) -- sets active clock to n. Max. number of clocks are 10!
+This operator does nothing, it just sets the index of clock to which the following
+clock operators will be implemented:
+  \clockreset() -- if active clock ticks, it performs \clockstop() first
+  Returns current time and set it to 0.
+  \clockstart() -- starts an active clock. If the active clock ticks, it 
+   performs \clockstop() first and  then start a clock again. Returns current time.
+  \clockstop() -- if active clock ticks, it stops them and returns current time; 
+  if the active clock does not tick, it just returns current time.
+Typical example:
+\clocksetactive(2)
+...
+\clockstart()
+...              block A
+\clockstop()
+...
+\clockstart()
+...              block B
+\clockstop()
+\message(\(Spent time=)\clockreset())
+will show the user time spent to evaluate sections A and B together.
+
+New mechanism:
+All tt prefixed operators relate to topology table mechanism.
+Error codes see tt_type.h.
+Operators:          
+
+ \ttLoad(filename) loads a table from specified file and returns it's id >0,
+	or error code <0
+\ttDelete(table) deletes specified table, returns number of topologies
+  or error code <0
+\ttHowmany(table) -- returns number of topologies,
+  or error code <0
+\ttOrigTopology(table, topology) -- returns original (incoming) topology,
+   or error code <0
+\ttRedTopology(table, topology) -- returns reduced topology,
+   or error code <0
+\ttTopology(table, topology) -- returns transformed (nusr) topology,
+   or error code <0
+\ttNInternal(table, topology) -- returns number of internal lines,
+   or error code <0
+\ttExternal(table, topology) -- returns number of external lines,
+   or error code <0
+\ttNVertex(table, topology) -- returns number of vertices,
+   or error code <0
+\ttNMomenta(table, topology) -- returns number of momenta set,
+   or error code <0
+\ttLookup(topology,table) -- expects "topology" to be a string representation of a
+   topology, reduces it and looks it up in the table number "table".
+   Returns its number or <0 error code
+\ttMomenta(n,table, top) -- returns string of momenta (nusr, translated) of a set
+ "n" of a topology number "top" of a table number "table",or <0 error code
+\ttHowmanyRemarks(table, topology) -- returns total number of remarks
+   in topology, or error code <0 -- see tt_type.h
+\ttGetRemark(name,table, topology) -- gets remark or "" if fails
+\ttSetRemark(name, valu,table, topology) --Sets remark. Returns "",
+   or error code <0 -- see tt_type.h
+\ttKillRemark(name,table, topology) -- removes remark. Returns "", if ok,
+   or or error code <0 -- see tt_type.h
+\ttValueOfRemark(num,table, topology) -- returns the value of the remark
+   number "num" from (table, topology) or empty line, "num" is counted from 1
+\ttNameOfRemark(num,table, topology) -- returns the name of the remark
+   number "num" from (table, topology) or empty line, "num" is counted from 1
+Translation:
+All substrings  of the form {foo} in momenta assuned to be a "token" to be translated.
+By default, they will be translated to "" ( empty string) To change this behaviour,
+the user must specify a string 
+token foo = something
+in the beginning of the table -- then the value "something" will be default, i.e.,
+all "{foo}" will be replaced by "something", i.e.:
+
+In the table:
+token foo = something
+topology top1: (1,2)(1,2)(1,2):p1,p{foo}2,p3;
+
+Then:
+\ttMomenta(1,1,1)->
+p1,psomething2,p3;
+
+The default value can be re-set by means of the following operator:
+\ttTranslate(token,translation,table) -- set the token translation,
+   returns "1" if it stores new token (i.e., if such a token is absent in the table),
+   TT_NOTFOUND (see tt_type.h) if there is no such a table, "" if it replaces
+   existing token
+
+\ttLookupTranslation(token,table)
+Looks up the token in the translation table and returns the translation,
+or "" if not found
+\ttTranslateTokens(text,table)
+  Expects "text" is a text with tokens of kind
+  blah-blah-blah ... {token} ... blah-blah-blah ... {token} ... blah-blah-blah ...
+  Replaces all {token} according to the table from the table "table" and puts the result
+  into buf. If the token is absent, it will be translated into empty string.
+  If the table is not found, returns text "as is".
+  If the built line is too long, fails. and halts the program
+\ttSetSep(newsep) - sets new separator for line/vertex substitutions,
+returns empty string
+\ttGetSep() returns current separator for line/vertex substitutions:
+\ttLinesReorder(pattern,table,top) reorders internal lines enumerating. Pattern:
+  positions -- old, values -- new, separated by tt_sep, e.g.
+  "2:1:-3:5:-4" means that line 1 > 2, 2 ->1, 3 just upsets,
+  4->5, 5 upsets and becomes of number 4.
+  Returns "" if substitution was implemented, or error code, if fails.
+  In the latter case substitutions will be preserved
+\ttVertexReorder(pattern,table,top) reorders  vertex enumerating. Pattern:
+  positions -- old, values -- new, separated by tt_sep, e.g.
+  "2:1:3:5:4" means that vertices 1 > 2, 2 ->1, 3->3,
+  4->5, 5 ->4.
+  Returns "" if substitution was implemented, or error code, if fails.
+  In the latter case the vertex substitution will be preserved
+		
+ \ttGetCoords(type,table,top) returns coordiates -- double pairs x,y,x,y,....
+  The value of "type"  must be one of the following identifiers:
+     ev,evl,el,ell,iv,ivl,il,ill, -- for transformed cooredinates;
+     oev,oevl,oel,oell,oiv,oivl,oil,oill -- for original coordinates.
+  On error, returns "". If "type" is invalid, halts the system!! 
+
+  \ttErrorCodes(code) -- if code is one of Error code from "tt" system, this
+    function returns the corresponding text. Otherwise, it returns the
+    argument without any changings. 
+
+*** Unsynchronized: ***
+
+New function \asksystem(cmd,input) --  Creates two pipes,
+  invokes system shell and executes command, passing "input" 
+  as a stdin. Returns the stdout of the executed command
+  (only the first line, all other will be dropped out!).
+
+Fix 3 bug-like features:
+  1) Max. string length was not checked in get_string routine --
+     fixed.
+  2) Max. string length was really too small (250!) -- increase it 
+     up to 1024.
+  3) Under some conditions after manipulations with escape character 
+     it is possible to force extra \ENDDEF (without a corresponding
+     \DEF). This is unavoidable: a preprocessor is too stupid! 
+        In 2.23 this may lead to unpredictable results. Now it is more
+     reliable: in attempt to go back from an extra macro the program
+     fails with diagnostics "Can't return from include".
+ 
+******************** revision 2.23 date: 2000/10/17 19:20:46
+1. The problem vith pure vertex diagrams is fixed!
+   Now Diana is able to work with pure vertex diagrams,
+   when there are no internal lines at all.
+2. The system path can be set by means of the environment variable
+   DIANATMLPATH. Settings from the configuration file just overwrite 
+   this variable.
+3. Trailing slash  ("/") in the system path is not needed anymore,
+   if absent, it will be substituted by Diana itself.
+ 
+******************** revision 2.22 date: 2000/07/11 12:16:47
+1. Makefile for the PC version was  modified so it can be used to link 
+the program statically. This appears to require some internal changings: 
+global variable index is changed to iNdex since it conflicts with the 
+function "index" in the standart library.
+
+2. Command line option -V (or -version) leads to output the current revision 
+number and exit, if there are no more cmdline options. 
+******************** revision 2.21 date: 2000/04/10 17:14:54
+Bugs:
+
+1. Bug is fixed:
+   Expansion of multiply keywords in FORM id (num, fnum, etc.) 
+   was performed only once. The remain keywords appeared
+   as a garbage. Now ALL keywords are expanded correctly.
+
+2. Bug is fixed:
+   If the user forgot external line indices, then they appeared
+   as a garbage. Now Diana will halt with proper diagnostics.
+
+3. Bug is fixed: during calculating of the topology coordinates
+   in some conditions there can be devision by 0.0, if all
+   3 points of some line coincide. Even this is not a case,
+   the postscript code for such a degenerated line appeared to be
+   broken.
+      Now such coinciding points are splitted by a small x - shift.
+
+Features:
+
+4. The operator \adjust() will newer return value for the size of cell
+   less then SMALL_RAD (=10).
+
+5. Automatic generation of vertexmarks from generic topologies is removed.
+   (This was a nonsense!)
+ 
+******************** revision 2.20 date: 2000/03/20 18:12:09
+Forgotten in the Readme file for the revision 2.19:
+Two bugs were fixed:
+ 1. In the function s_gcmp ( tools.c) the priority of 
+    logical operators in the last return() is changed.
+    This bug may appear in build_momentum when somebody asks
+    not a full momentum, but only a specific group.
+    I am not sure that this bug really affects on the Diana output.
+ 2. In the TM operator \find() there was incorrect integer format.
+    This bug may appear in systems where "long" integers differ form "int"
+    ones, e.g., DOS.
+Ok, all this stuff is fixed.
+
+Now, changings in 2.20 against 2.19:
+
+1. The syntax of the directive 
+      linemark=mnum
+   is changed:
+      lvmark=mnum
+2. New directives for topologies are available:
+      vertexmarks <topname> = <one>, <two>,...
+   absolutely similar to the linemarks.
+3. New operator 
+     \vertexmarks(#)
+   which is similar to the operator
+     \linemarks(#)
+4. So, "lvmark" id may appear in vertices FORM id's, too.
+5. New directive
+      marks length = #
+   The point is that in FORM id's by default only first 3 symbols of
+   the corresponding "lvmark" may appear; it is enough for numbers.
+   But, if the user wants to use "lvmarks" in some unusual way...
+   He can set
+       marks length = 30
+   and use very long texts for line/vertex marks...
+6. New operators
+      \setlinemark(#,newmark)
+      \setvertexmark(#,newmark)
+   may be used to reset exising marks. Both these operators return 
+   the old value of the mark.
+7. Important: in contrast to rev. 2.19, starting from this revision
+   we change binding of the numbers of lines in the arguments
+   of \linemarks() and in FORM id's so that they change with
+   \lsubstitution(). The same is true for vertices marks.
+
+8. User transparent ( internally):
+    a)  the name of the procedure "clear_linemarks()" is changed to
+        "clear_lvmarks()"
+    b)  New substitution is formed for each diagram,"vt_subst", similar 
+        to "lt_subst", see "The substitution map" in variabls.h.
+
+ 
+******************** revision 2.19 date: 2000/03/13 16:39:09
+1. Bugs are fixed:
+  1) In read_inp.c top_text++ for a tadpole is moved outside the cycle.
+     The previous version was incorrect -- some of text[] may be 
+     uninitialised. This can leads a crash at new_diagram().
+  2) The size of  tadpoles in the PostScript subroutine
+     getMinMax now assumes the tadpole as the square. Prev.
+     version leads to incorrect definition of the size of the
+     tadpoles.
+  3) Very dangerous! At sertain conditions ( <the length of one of the 
+     text line which is formed while creating of the indices text> % 8 ==1,
+     on some compilers ( in particular, gcc 2.7.2.1  under Linux; on 
+     Alpha does not appears) in tadpoles the second index may contain 
+     trailing garbage. On multiindex ( many groups) in tadpoles
+     this bug may crashes the program (in principle, never observed).
+
+2. Possible bug ( may appear in future developig )
+     The function "sortinternaltopology" returns nothing! -- Fixed.
+
+3. The restriction of maximal 4-order coupling in a vertex is changed to 8.
+
+4. Generic topology -- a new mechanism of momenta distributing.
+   The idea is that the user provides several "generi" topologies
+   together with momenta, similar to the conventional Diana's topology.
+   Then Diana will generate all possible topologies form provided generic
+   topologies by reducing all possible lines. All momenta at remaining lines 
+   coincide with the momenta at the original generic topology. The name 
+   of a generated topology is constructed form the names of a generic 
+   topology by adding #1_#2_ etc. where #1 is the number of the first 
+   reduced line, #2 is the second one, etc. The tadpoles do not reduced 
+   to prevent the changing of the number of the loops. By default, 
+   all generated couplings of order more then 4 ( the number of lines 
+   in a vertex) are rejected, but the user can change this maximal number 
+   by means of the special settings 
+     number of generated couplings = 4
+   in the configuration file. Another related setting  is
+     number of generic topologies = 17
+   which is the size of the hash-table for the generic topologies. 
+   The optimal is set the nearest prime number more then the total
+   number of the generic topologies ( The default value is 17).
+   Example: The user supply
+      generictopology A,Aa,Ab=
+       (-2,2)(-1,1)(1,3)(3,2)(2,4)(4,1)(3,4):
+        p1+k1,p1+k2,k2,k1,k1-k2:
+        p1+k2,p1+k1,k1,k2,k2-k1;
+   Then Diana will generate the following set of the topologies:
+      topology A1_3_,Aa1_3_,Ab1_3_ =
+       (-2,2)(-1,1)(1,2)(2,1)(1,2):
+        +p1+k2,+k1,+k1-k2:
+        +p1+k1,+k2,+k2-k1;  
+     topology A2_,Aa2_,Ab2_ =
+       (-2,2)(-1,1)(1,2)(2,3)(3,1)(2,3):
+         +p1+k1,+k2,+k1,+k1-k2:
+         +p1+k2,+k1,+k2,+k2-k1;  
+     topology A1_,Aa1_,Ab1_ =
+       (-2,2)(-1,1)(1,2)(2,3)(3,1)(1,3):
+         +p1+k2,+k2,+k1,+k1-k2:
+         +p1+k1,+k1,+k2,+k2-k1;
+     topology A5_,Aa5_,Ab5_ =
+       (-2,2)(-1,1)(1,3)(3,2)(2,3)(3,1):
+         +p1+k1,+p1+k2,+k2,+k1:
+         +p1+k2,+p1+k1,+k1,+k2; 
+     topology A,Aa,Ab =
+       (-2,2)(-1,1)(1,3)(3,2)(2,4)(4,1)(3,4):
+         +p1+k1,+p1+k2,+k2,+k1,+k1-k2:
+         +p1+k2,+p1+k1,+k1,+k2,+k2-k1;
+     The lines numbering remains as for the conventional topologies,
+   but some special values are generated. This values can be obtained by 
+   the new operator
+     \linemarks(#)
+   where # is the number of some line. For topologies generated form the 
+   generic topology Diana will set this valuse according to numbering of 
+   the corresponding generic topology, e.g, for a diagram with the 
+   topology A1_ \linemarks(2) = 3.
+   The user can set arbitrary "linemarks" by means of the directive "linemarks".
+   Example:
+      linemarks A1_=a2,a3,a4,a5;
+   If "linemarks" are not defined by the user, and the current topology is
+   not generated from the generic one, then the operator \linemarks(#)
+   will return just the number of the line, i.e.,
+   \linemark(2)=2.
+   Every time Diana meets "linemarks" or "coordinates" directive in the 
+   configuration file, it will look at the generic topologies table. 
+   If it is not empty, then Diana will generate all possible topologies 
+   from the defined  generic topologies and after that it clears the 
+   current generic topology tables. If the topology generated from the 
+   generic one already exists, Diana rejects this topology.
+      After Diana finishes to read the configuration file, it 
+   looks at the generic topologies table (again) and generates
+   topology, if any. 
+5. New operator \topologyisgotfrom() -- returns "automatic", "generic"
+   of "user"
+6. New operator \momentatext(n) -- returns momenta set number "n" as 
+   it is set in current topology, or "", if something wrong.
+7. New keyword is added for FORM identifiers. Similar to "num" or "fnum"
+   this identifier in FORM expressions will be expanded to the linemarks.
+   Default is "mnum". The corresponding setting in the configuration file is
+      linemark=mnum
+8. Now Diana checks are all keywords for identifiers "num", "fnum", 
+   "mnum", "from", to","vec" and "ind" different. If not, then Diana fails. 
+9. Many user transparent changings in the code. Most important:
+     - read_topology in cnf_read.c accepts of 2 parameters;
+     - read_topol in topology.c reads topology from the scanner ONLY if
+       incoming topology has the total number of (internal+external) lines
+       equal to 0. In the opposit case it will think that the topology is
+       already ready.
+     - process_cell checks if v_subst is NULL. 
+     -the function pTOPOL sortinternaltopology is moved form static to
+      global stuff.
+ 
+******************** revision 2.18 date: 2000/01/17 11:48:01
+Many and important changings!
+I) In PostScript drivers:
+ 1)External lines are drawn as internal ones: outgoing ANTI-particles are drawn
+   as ingiong particles.
+ 2)Many bugs are fixed.
+
+II) Verifications in the external lines indices are added.
+    The restriction on \numberofexternallines() is removed:
+    now this operator can be used in 'extra call'.
+
+III) Indices: now the user can introduce as many indices groups as needed.
+     The old syntax is still valid.
+     New syntax:
+     a) It is possible to specify more then one indices group.
+        After 'index' definition you can specify the number of groups 
+        and then define all indices groups separated by a comma. Example:     
+           index:3=lind,aind,find
+        -- definition of 3 indices groups, "lind", "aind", and "find".
+        Old syntax is equivalent to the first group:
+            index=ind
+        is equivalent to
+            index:1=ind
+     b) For every group all indices must be defined as follows:     
+           indices:lind li1,li2,....;
+           indices:aind ai1,ai2,....;
+           indices:find fi1,fi2,...;
+        Old syntax assumes the group number 1:
+           indices i1,i2,....
+        means that
+           indices:ind  i1,i2,....;
+     c) Indices group for ingoing/outgoing particles can be qualified by 
+        the corresponding indices group:
+          ingoing g(li1:lind,ai1:aind;p1);
+          outgoing u(fi1:find;p2),U(fi2:find;p2);
+        Index without the group qualifier is supposed to be of the first indices
+        group:
+          ingoing g(li1,ai1:aind;p1);
+          outgoing u(fi1:find;p2),U(fi2:find;p2);
+        is equivalent to the previous example.
+     
+IV) New operators:
+        1)\maxindexgroup()  -- returns the total number of indices groups
+        2)\getfirstindex(group) -- returns the first index of the specified 
+           indices group
+        3)\getnextindex(group) --  returns successive index of the group 
+           'group', or "" (empty string).
+          The functions \getfirstindex(group) and  \getnextindex(group) 
+          are used to obtain indices from the indices table.
+          ALL INDICES, not only indices allocated for current diagram!
+          \getfirstindex(group) initialzes iterator and returns the first index
+          belonging to the specified group.
+          Then each successive call of \getnextindex(group) will returns the
+          next index from the indices table until all indices are exhausted.
+          Then the latter function will returning "" (empty string) until
+          new \getfirstindex(group)
+        4)\getfirstusedindex(group) -- returns the first index of the specified
+           indices group appeare in the current diagram;
+        5)\getnextindex(group) --  returns successive index of the group
+           'group', or "" (empty string).
+           The functions \getfirstusedindex(group) and \getnextusedindex(group)
+           are used to obtain ONLY indices allocated for current diagram
+           from the indices table.
+        6)\getexternalindex(group,line) -- returns the index of the group 
+          'group' at the external line 'line'. 
+        7)\numberofexternalindex(group) -- returns the number of the 
+          indices of group 'group' allocated for external legs.
+ 
+******************** revision 2.17 date: 1999/11/27 17:20:23
+New operator is added:
+\getXfromY(fontsize, dY) -- returns
+dX value  proper for EPS BoundingBox 0 0 dX dY
+ 
+******************** revision 2.16 date: 1999/11/22 17:39:33
+I)New operator is introduced: \isinteger(n) returns "true",
+if n is an integer number. If not, it returns "false".
+
+II)Printing facilities are completed.
+a)
+1. Operators:
+      \getPSarclabel(l)
+      \getPSvertexlabel(v)
+      \getPSvertex(v)
+   return X,Y coordinates of arcs, vertices or labels, if they are
+   defined. If not, all these operators retur an empty string.
+   Returned values are of the form ' x y ' so they can be used 
+   to load the PostScript parameters.
+2. Operators:
+      \getPSarc(l)
+      \getPSInfoArc(l)
+   return the PostScript coordinates of the line number l in the 
+   form: " ox oy r as ae l "
+   Here ox,oy -- the center coordinates, |r| -- radius, as,ae --
+   initial and target angles. If r<0.0, the angle is clockwise.
+   If r = 0.0, the line is stright, from (ox,oy) to (as,ae).
+   l is the length of the arc.
+   ATTENTION! The system coordinates is that Y is directed UPwards!
+   \getPSarc(l) assumes the line directions along directed propagators
+   while \getPSInfoArc(l) -- along nusr tolology (see the substitutions
+   map in the file variabls.h). Implementation: both these functions
+   call doGetPSarc(...) with the proper parameters.
+3. The operator \adjust(fontsize, x,y) outputs complete PS code
+   to adjust the size of diagram so that it fits to
+   0 0 x y bounding box, together with up line of "fontsize" height.
+   ATTENTION! It leaves 2 parameters in the postscript stack
+   which can be used for typing the text.
+4. \initps(header,target)-- returns "" if  ok, or "none", if there are NO 
+   topologies with distributed coordinates.
+      This operator reads information from the header file,
+   filters out all comments and extra lines and APPENDS the result to the 
+   file target. The result is the human unreadable text!
+5. \thiscoordinatesok() returns "true" or "false" depending on the completeness
+   of all coordinates in the current topology.
+6. \coordinatesok() -- returns "true", if AT LEAST one of topology has 
+  coordinates.
+
+b)
+The model is extended so there is possible to describe the type of the drawing 
+line while the propagator describing. Example:
+   old version:
+      [A,A;a;VV(num,ind:1,ind:2,vec,0)*i_;0]
+   new version:
+      [A,A;a;VV(num,ind:1,ind:2,vec,0)*i_;0;wavy,4,2]
+I.e., just befor the last "]" the user can desribe (optionally) how to draw 
+this line. The synthax is:
+ ;<linetype>,<parameter>,<linewidth> 
+( in the above example: 
+  <linetype>=wavy
+  <parameter>=3
+  <linewidth> = 2 )
+The <linetype> is just an abstract type of the line. It can be one of the 
+following:
+wavy,arrowWavy,spiral,arrowSpiral,line,arrowLine
+This information is stored in the global variables:
+_PSRaw_#p -- the begin of the propagator containing this information;
+_PSRaw_#v -- this information in the form:
+    '<parameter> <linewidth> <linetype>'
+Here '#' is the order number.
+
+ 
+******************** revision 2.15 date: 1999/10/15 15:22:00
+GPL header added to each file.
+
+ 
+******************** revision 2.14 date: 1999/10/15 14:16:26
+Topology editor support is added. Now it is minimal, just two 
+commands in the configuration file:
+outlines=2
+coordinates ....;
+Only to avoid the  syntax control.
+
+
+ 
+******************** revision 2.13 date: 1999/07/16 12:21:40
+1. Bug is fixed which can lead to SEGV during cleaning 
+   hash tables when fail from the function having labels: 
+   truns.c clear_program: if top_save_run >0 then 
+   labels_tables=save_run[0].labels_tables;
+2. Bug is fixed in macro.c:
+   function noncurrenttopologyid forbidden text_created.
+   This led to "Can't reset..." diagnostics.
+   Why? Now is removed...
+ 
+******************** revision 2.12 date: 1999/05/12 16:54:32
+New preprocessor directive is added:
+ARGC() -- returns the comma-separated list of kinde "1,2,3,4",
+if the number of the command line parameters passed to the interpreter 
+is equal to 4. It is used together with CMDLINE(i):
+\FOR(_iI)(\ARGC())
+   \include(\CMDLINE(\_iI()))
+\ENDFOR
+
+ 
+******************** revision 2.11 date: 1999/03/19 16:12:56
+Minor bug is fixed:
+preprocessor IF's tries undefined SET variables as non-empty.
+Now is ok: IFNEQ(qq)() is true, if qq iz not defined.
+ 
+ 
+******************** revision 2.10 date: 1999/03/05 12:07:20
+Bug fixed: in operator "setinternaltopology" lsubstitution
+was used in wrong way.
+
+ 
+******************** revision 2.9 date: 1999/03/03 17:14:12
+1. Bug is fixed: canonicaltopology was not accounting identical substitution 
+2. Bug is fixed: undefined topologies now have identical substitutions.
+3. Comment about substitutions map is added to the file "variables.h", search
+   "substitution map"
+4.New operators appear:
+  \tr(from, to, str) -- Changes all characters of 'str' matches 'from' 
+     to corresponding from 'to'.
+  \setinternaltopology(lsubst,vsubst) -- sets canonical topology
+     according to lsubt, vsubst from the current topology. Return produced
+     topology.
+  \reducetopologycanonical(topology,varname) -- returns canonical form of 
+    "topology", and sets local variables varname_L and varname_V to line and 
+    vertex substitutions, respectively, according to lubst[canonical]=top
+  \reducetopology(topology,varname) -- returns reduced form of "topology",  
+    and sets local variables varname_L and varname_V to line and vertex 
+    substitutions, respectively, according to lubst[reduced]=top
+  \ilsubst(lsubst) -- takes the substitution as obtained by the operator
+    \reducetopologycanonical, and returns the substitution suitable to use
+    in the operator \setinternaltopology, by combining them with the existent
+    substitution "lsubst".
+  \ivsubst(vsubst) -- takes the substitution as obtained by the operator
+    \reducetopologycanonical, and returns the substitution suitable to use
+    in the operator \setinternaltopology, by combining them with the existent
+    substitution "vsubst".
+  \whereleg(i) -returns vertex number of internal topology connected
+    with given external leg
+  \i2u_line(i) converts internal line number to user defined
+  \i2u_vertex(i) converts internal vertex number to user defined:
+  \i2u_sign(i) compares internal line direction with the corresponding user 
+    defined
+  \u2i_line(i) converts user defined line number to internal
+  \u2i_vertex(i) converts user defined vertex number to internal
+  \u2i_sign(i) compares user defined line direction with the corresponding 
+    internal
+ 
+******************** revision 2.8 date: 1999/01/26 09:21:23
+1.The function read_file_name from the module read_cnf is changed so
+that it reads just the string till " without any changings.
+Now all settings such as file names etc. may contain 
+spaces.
+
+2. 4 new functions are added into tools:
+/* The following 4 functions add or removes all elemens
+of their first arguments from scanner spaces or delimiters:*/
+one_byte add_spaces(char *thespaces);
+one_byte rm_spaces(char *thespaces);
+one_byte add_delimiters(char *thedelimiters);
+one_byte rm_delimiters(char *thedelimiters);
+
+3. 4 new preprocessor directives are added:
+ADDSPACES(characters) -- adds new spaces to the scanner
+RMSPACES(characters) -- removes spaces from the scanner
+ADDDELIMITERS(characters) -- adds new delimiters to the scanner
+RMDELIMITERS(characters) -- removes delimiters from the scanner
+
+4. The behaviour of the operator "call" is changed:
+now if it fails, it will trying to call the function 
+"default". If it will fail again, it will halt the program.
+ 
+******************** revision 2.7 date: 1999/01/24 11:42:49
+Two poerators are added:
+
+1."flush". Flushes the internal buffer and returns the current position at
+the output file. In the file is NULL or stdout, returns -1.
+
+2."writetofile(fname,pos,srting)". Writes its argument at a specified
+position to a named file. Returns true or false
+ 
+******************** revision 2.6 date: 1999/01/19 15:57:45
+1. Corrected: now the preprocessor variable _body really corresponds to 
+   "function" or "program".
+
+2. New  operators \_modesave() and \_moderestore()
+   They are the same as \modesave() and \moderestore(), but they are using 
+   separate stask, and there are no control of stask underflow.
+   They can appears outside the body. In the latter case they DO NOTHING!!
+   To do this, we introduce 3 new 
+   variables in "trunsrun.h: 
+     int *p_modestack=NULL;
+     int p_top_modestack=0;
+     int p_max_modestack=0;
+ 
+******************** revision 2.5 date: 1998/11/19 20:14:04
+New operator is added: \beginpropagator(l)
+It returns the first particle of the propagator on line l.
+(This is just the old version of \particle()).
+ 
+******************** revision 2.4 date: 1998/11/18 11:00:08
+Small bug fixed, which may cause the crash during disallocating
+of the topologies momenta in terr.
+
+ 
+******************** revision 2.3 date: 1998/11/17 19:11:49
+Introduced  new preprocessor directive \NEWCOMMA()
+It changes (locally) the symbol used as delimiter of the arguments.
+This is necessary in many cases to expand variables in 
+preprocessor directives.
+ 
+******************** revision 2.2 date: 1998/11/17 14:35:07
+Ok, now I introduce 3 new preprocessor directives:
+\REMOVE(var)(str)
+  Removes all characters occuring in str from the value of var.
+  If var does not exist, nothing happen.
+\REPLACE(var)(oldstring)(newstring)
+  Replaces the first occurence of the oldstring by the newstring.
+  If var does not exist, nothing happen.
+\REPLACEALL(var)(oldstring)(newstring)
+  Replaces all occurences of the oldstring by the newstring.
+  If var does not exist, nothing happen.
+ 
+******************** revision 2.1 date: 1998/11/17 11:55:12
+There I begin to work with Oleg Veretin's problem ( I mean, topologies).
+Now I have introduced the following operators:
+"canonicaltopology" -- returns
+   string representation of the canonical form current topology
+"externalpartoftopology"
+   -- returns external part of the canonical form of current topology
+"internalpartoftopology"
+   -- returns internal part of the canonical form of current topology
+Unfortunately, the mechanizm of transit substitution does not work
+properly:(

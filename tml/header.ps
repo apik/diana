@@ -1,0 +1,520 @@
+%
+% Desirable length of one winding:
+/windinglen 10.0 def
+%
+% The following postScript code is made by J.A.M. Vermaseren 14-feb-1994
+% for  axodraw.sty -- the style file for the drawing of Feynman diagrams with
+% LaTeX.
+% Begin of the postScript code extracted from axodraw.sty:
+%  #[ inventory :
+%
+%   The variables in are:
+%   mtrx,num,ampi,x1,y1,x2,y2,dx,dy,dr,speed
+%   step,phi,arcend,arcstart,radius
+%   theindex,thechar,darc,const,amp1 amp2 amp3
+%   gcolor,xx,name,name1,name2,xx1,xx2
+%
+/ed{exch def}def /gs{gsave dup scale}def
+/gsw{gs /width ed width setlinewidth}def /p1{/y1 ed /x1 ed}def
+/p2{/y2 ed /x2 ed}def /abox{newpath x1 y1 moveto x1 y2 lineto
+x2 y2 lineto x2 y1 lineto closepath}def 
+%
+%  #] inventory :
+%  #[ arrowup :
+%
+/arrowup{
+    /nwidth { width 1 add } def
+    newpath
+        0 nwidth 1.5 mul moveto             % Arrow is a triangle
+        nwidth 1.2 mul nwidth 3 mul neg rlineto
+        nwidth 2.4 mul neg 0 rlineto
+%        nwidth 1.2 mul nwidth 3 mul rlineto
+    closepath fill                          % and it is filled
+} def 
+%
+%  #] arrowup :
+%  #[ arrowright :
+%
+/arrowright{
+    /nwidth { width 1 add } def
+%   -10 0 moveto 10 0 rlineto 0 0 moveto stroke
+    newpath
+        nwidth 1.5 mul 0 moveto             % Arrow is a triangle
+        nwidth 3 mul neg nwidth 1.2 mul rlineto
+        0 nwidth 2.4 mul neg rlineto
+        nwidth 3 mul nwidth 1.2 mul rlineto
+    closepath fill                          % and it is filled
+} def 
+%
+%  #] arrowright :
+%  #[ gluon :
+%
+/gluon{
+    gsw /num ed /ampi ed /dy ed /dx ed p1
+    /dy dy y1 sub def /dx dx x1 sub def
+%
+%   We have a 'head' and a 'tail' and inbetween the 'body'
+%   The head + tail is 2 windings. The body is num-1 windings.
+%
+    /dr dx dx mul dy dy mul add sqrt def
+%
+    x1 y1 translate dy dx atan rotate
+%
+    /num num 0.5 sub round def
+    /inc dr num 2 mul 2 add div def         % increment per half winding
+    /amp8 ampi 0.9 mul def
+    amp8 0 lt {/amp8 amp8 neg def} if
+%
+    /x1 inc 2 mul def
+%
+    newpath
+        0 0 moveto
+        inc 0.1 mul ampi 0.5 mul inc 0.5 mul ampi inc 1.4 mul ampi curveto
+        x1 amp8 add dup ampi exch ampi neg dup x1 exch curveto
+%
+        2 1 num {
+            pop
+            x1 amp8 sub dup ampi neg exch ampi dup x1 inc add exch curveto
+            /x1 x1 inc dup add add def
+            x1 amp8 add dup ampi exch ampi neg dup x1 exch curveto
+        } for
+%
+        x1 amp8 sub dup ampi neg exch ampi dup x1 inc 0.6 mul add exch curveto
+        x1 inc 1.5 mul add ampi dr inc 0.1 mul sub ampi 0.5 mul dr 0 curveto
+    stroke
+%
+    grestore
+} def 
+%
+%  #] gluon :
+%  #[ photon :
+%
+/photon{
+%
+%   Draws a photon from x1,y1 to x2,y2 with amplitude A and n wiggles
+%
+    gsw /num ed /ampi ed p2 p1
+    /dy y2 y1 sub def /dx x2 x1 sub def
+    /dr dx dx mul dy dy mul add sqrt def
+%
+    x1 y1 translate
+    dy dx atan rotate
+    /num num 2 mul 0.5 sub round def
+    /x2 dr num div def
+    /pi 3.141592 def
+    /sign 1 def
+    1 1 num {
+        pop
+        newpath
+        0 0 moveto
+        4 3 div x2 mul pi div dup neg x2 add
+        4 3 div ampi sign mul mul dup 3 1 roll
+        x2 0 curveto
+        stroke
+        /sign sign neg def
+        x2 0 translate
+    } for
+%
+    grestore
+} def 
+%
+%  #] photon :
+%  #[ photonarc :
+%
+/photonarc{
+%
+%   Draws a photonarc center at x1,y1, radius arcstart,arcend, amplitude
+%       number of wiggles,  width, scale
+%
+    gsw /num ed /ampli ed /arcend ed /arcstart ed /radius ed
+%
+    translate       % The center of the circle is now the origin
+%
+    /num num 2 mul round def    % number of half wiggles
+    arcend arcstart lt { /arcend arcend 360 add def } if
+    /arcend arcend arcstart sub num div def    % phi
+    arcstart rotate
+    /arcstart arcend 2 div def                 % phi/2
+    /cp arcend cos def
+    /sp arcend sin def
+    /cp2 arcstart cos def
+    /sp2 arcstart sin def
+%
+    newpath
+    1 1 num {
+        pop
+        radius 0 moveto
+        /beta radius arcend mul 180 ampli mul div def
+        /tt sp cp beta mul sub cp sp beta mul add div def
+        /amp1 radius ampli add 8 mul beta cp2 mul sp2 sub mul beta 4 cp add mul
+            tt cp mul 3 mul sp 4 mul sub add radius mul sub
+            beta tt sub 3 mul div def           % this is x2
+        radius ampli add 8 mul cp2 mul 1 cp add radius mul sub 3 div amp1 sub
+            dup radius sub beta mul             % x1,y1
+        amp1 dup radius cp mul sub tt mul radius sp mul add     % x2,y2
+        radius cp mul radius sp mul             % x3 y3
+                curveto
+        /ampli ampli neg def
+        arcend rotate
+    } for
+    stroke
+%
+    grestore
+} def 
+%
+%  #] photonarc :
+%  #[ gluearc :
+%
+/gluearc{
+%
+%   Draws a gluon on an arcsegment
+%   x_center,y_center,radius,stat_angle,end_angle,gluon_radius,num
+%   in which num is the number of windings of the gluon.
+%   Method:
+%   1:  compute length of arc.
+%   2:  generate gluon in x and y as if the arc is a straight line
+%   3:  x' = (radius+y)*cos(x*const)
+%       y' = (radius+y)*sin(x*const)
+%
+    gsw /num ed /ampi ed /arcend ed /arcstart ed /radius ed
+%
+    translate                               % move to center of circle
+    arcend arcstart lt { /arcend arcend 360 add def } if
+    arcstart rotate                         % segment starts at zero
+    /darc arcend arcstart sub def           % argsegment
+    /dr darc 180 div 3.141592 mul radius mul def  % length of segment.
+    /const darc dr div def                  % conversion constant
+%
+    /num num 0.5 sub round def
+    /inc dr num 2 mul 2 add div def         % increment per half winding
+%
+    /amp8 ampi 0.9 mul def
+    /amp1 radius ampi add def
+    /amp2 radius ampi sub def
+    /amp3 radius ampi 2 div add def
+    /amp4 amp1 inc amp8 add const mul cos div def
+    /amp5 amp2 amp8 const mul cos div def
+    /amp6 amp1 inc 0.6 mul amp8 add const mul cos div def
+    /amp7 amp1 inc 0.9 mul const mul cos div def
+    amp8 0 lt {/amp8 amp8 neg def} if
+%
+    /x1 inc 2 mul def
+%
+    newpath
+        radius 0 moveto
+%
+        inc 0.1 mul const mul dup cos amp3 mul exch sin amp3 mul
+        inc 0.5 mul const mul dup cos amp7 mul exch sin amp7 mul
+        inc 1.4 mul const mul dup cos amp1 mul exch sin amp1 mul
+            curveto
+        x1 amp8 add const mul dup cos amp6 mul exch sin amp6 mul
+        x1 amp8 add const mul dup cos amp5 mul exch sin amp5 mul
+        x1 const mul dup cos amp2 mul exch sin amp2 mul
+            curveto
+%
+        2 1 num {
+            pop
+            x1 amp8 sub const mul dup cos amp5 mul exch sin amp5 mul
+            x1 amp8 sub const mul dup cos amp4 mul exch sin amp4 mul
+            x1 inc add const mul dup cos amp1 mul exch sin amp1 mul
+                curveto
+            /x1 x1 inc dup add add def
+            x1 amp8 add const mul dup cos amp4 mul exch sin amp4 mul
+            x1 amp8 add const mul dup cos amp5 mul exch sin amp5 mul
+            x1 const mul dup cos amp2 mul exch sin amp2 mul
+                curveto
+        } for
+%
+        x1 amp8 sub const mul dup cos amp5 mul exch sin amp5 mul
+        x1 amp8 sub const mul dup cos amp6 mul exch sin amp6 mul
+        x1 inc 0.6 mul add const mul dup cos amp1 mul exch sin amp1 mul
+            curveto
+        x1 inc 1.5 mul add const mul dup cos amp7 mul exch sin amp7 mul
+        dr inc 0.1 mul sub const mul dup cos amp3 mul exch sin amp3 mul
+        dr const mul dup cos radius mul exch sin radius mul
+        curveto
+    stroke
+%
+    grestore
+} def 
+%
+%  #] gluearc :
+/line{
+%
+%   Draws a straight line: x1,y1,x2,y2
+%
+    gsw p2 p1
+%
+    newpath
+      x1 y1 moveto
+      x2 y2 lineto
+    stroke
+    grestore
+} def 
+%
+%  #] line :
+%  #[ dashline :
+%
+/dashline{
+%
+%   Draws a straight dashed line: x1,y1,x2,y2,dsize
+%
+%   The pattern is ideally [dsize dsize] 0 setdash
+%   but we want to have (2*n+1)/2 patterns, so dsize must be rounded
+%
+    gsw /dsize ed p2 p1
+    /r y2 y1 sub dup mul x2 x1 sub dup mul add sqrt def
+    /dsize r dsize 2 mul div 0.5 sub round dup 0 le { pop 0 } if 2 mul 1 add
+    r exch div def
+    [dsize dsize] 0 setdash
+%
+    newpath
+      x1 y1 moveto
+      x2 y2 lineto
+    stroke
+    grestore
+} def 
+%
+%  #] dashline :
+%  #[ carc :
+%
+/carc{
+%
+%   Draws an anti-clockwise arc segment:
+%   x_center, y_center, radius, start_angle, end_angle
+%
+    gsw /arcend ed /arcstart ed /radius ed
+%
+    translate                               % x and y are still on stack
+    newpath 0 0 radius arcstart arcend arc stroke
+    grestore
+} def 
+%
+%  #] carc :
+%  #[ dashcarc :
+%
+/dashcarc{
+%
+%   Draws an anti-clockwise arc segment:
+%   x_center, y_center, radius, start_angle, end_angle, dsize
+%
+    gsw /dsize ed /arcend ed /arcstart ed /radius ed
+%
+    translate                               % x and y are still on stack
+%
+%   Compute the length of the line
+%
+    /dr arcend arcstart sub dup 0 lt { 360 add } if
+        3.14159 mul 180 div radius mul def
+    /dsize dr dsize 2 mul div 0.5 sub round dup 0 le { pop 0 } if 2 mul 1 add
+    dr exch div def
+    [dsize dsize] 0 setdash
+%
+    newpath 0 0 radius arcstart arcend arc stroke
+    grestore
+} def 
+%
+%  #] dashcarc :
+%  #[ vertex :
+%
+/vertex{
+%
+%   Puts a fat dot at x,y  size is the radius of the dot
+%
+    gs
+    /dotsize ed
+    translate
+    newpath
+        0 0 dotsize 1 add 0 360 arc
+    1 setgray fill stroke
+    newpath
+        0 0 dotsize 0 360 arc
+    0 setgray fill stroke
+    grestore
+} def 
+%
+%  #] vertex :
+% End of the postScript code extracted from axodraw.sty
+%
+% The following postScript code was made by M.Tentyukov to provide
+% the DIagram ANAlyzer DIANA 
+% (http://www.physik.de/~tentukov/diana.html) by postscript facilities.
+% There are six routines for the propagator drawing,
+% divided in two groups. All names ended by 'a' are directed propagators
+% (with an arrow in the middle), while routines with the same name
+% without trailing 'a' are UNdirected propagators, without arrows.
+%
+% pph -- wavy (photon propagator); ppha -- directed photon propagator;
+% pgl -- spiral (gluon propagator); pgla -- directed gluon propagator;
+% pln -- line ( may be, dashed); plna -- directed line;
+%
+% The idea is that the user provide each particle by the proper 
+% routine with two parameters:
+% <Amplitude> <Thickness> [pph,ppha,pgl,pgla];
+% <Dashsize> <Thickness> [pln,plna] -- here if <Dashsize> < 1 then the line is
+% solid.
+% The Diana operator \getPSarc((lineNumber) outputs other necessary parameters:
+% x1 y1 R x2 y2 N
+% Here  
+%   if R == 0 then
+%      the stright line from (x1,y1) to (x2,y2).
+%       The N is just the length
+%   else 
+%      (x1,y1) -- center of circle, |R| -- radius, x2 -- start angle, y2-
+%      target angle. The angle is anti-clockwise , if R>0, and clockwise
+%      if R<0. The N is the length;
+%
+/pstv{% auxiliary routine to prepare parameters to make an arrow
+   7 index /gx exch def
+   6 index /gy exch def
+   5 index /gr exch def
+   4 index /gstart exch def
+   3 index /gend exch def
+   1 index /amp exch def
+   /gdx gstart gx sub def 
+   /gdy gend gy sub def
+   5 index 0 gt { % Anti-clockwise 
+%      /arrowud { arrowup } def         
+      gstart gend gt {
+      /gend gend 360 add def } if
+   }{ % Clockwise! Exchange start and target angles:
+      /x1 gstart def /gstart gend def /gend x1 def
+%      /arrowud { arrowup } def
+      gstart gend lt {
+      /gstart gstart 360 add def } if
+   } ifelse   
+} bind def
+% input: x1 y1 R x2 y2 N <Dashsize> <Thickness> 
+% output: empty
+% Graphics: just a line
+/pln{
+    pstv    
+    5 index 0 eq { % stright line 
+       /theCircle false def
+       6 -1 roll pop % Remove R
+       3 -1 roll pop % Remove N
+       1 index 1 lt { % solid line
+          2 -1 roll pop % Remove <Dashsize>
+          1 line
+       }{ % dashed line
+          1 dashline
+       } ifelse
+    }{ % The circle
+       /theCircle true def
+       3 -1 roll pop % Remove N
+       1 index 1 lt { % solid arc
+          2 -1 roll pop % Remove <Dashsize>
+          3 index 0 gt {
+             1 carc
+          }{
+             4 -1 roll neg 4 1 roll
+             3 -1 roll exch % Exchange start and target angles
+             1 carc
+          } ifelse
+       }{ % dashed  arc
+          4 index 0 gt {
+             1 dashcarc
+          }{
+             5 -1 roll neg 5 1 roll
+             4 -1 roll 3 1 roll % Exchange start and target angles
+             1 dashcarc
+          } ifelse
+       } ifelse
+    } ifelse
+} bind def   
+% The /mkarrow use the variablesi it does not use the stack.
+/mkarrow {% auxiliary routine to make an arrow on a propagator
+   theCircle {
+    gsave
+    gx gy translate 
+    gstart gend add 2 div rotate        % middle of arc
+    gr 0 translate                      % move to it
+    /width amp 0.8 mul def
+    1 setgray 
+    arrowup 
+    0 setgray 
+    /width amp 2 div def
+    arrowup
+    grestore
+   }{ % Stright line
+    gsave
+    gx gy translate
+    gdy gdx atan rotate
+    gdx gdx mul gdy gdy mul add sqrt 2.0 div 0 translate
+    /width amp 0.8 mul def
+    1 setgray
+    arrowright 
+    0 setgray 
+    /width amp 2 div def
+    arrowright
+    grestore
+   } ifelse
+} bind def
+% input: x1 y1 R x2 y2 N <Dashsize> <Thickness> 
+% output: empty
+% graphics: line with an arrow at the middle
+/plna{
+   pln
+  /amp width 2 mul def
+   mkarrow 
+} def
+% input: x1 y1 R x2 y2 N A W 
+% output:empty
+% graphics: gluon or photon, depending on /phorgl and /phorglarc
+/ppgh{
+   pstv
+   3 -1 roll windinglen div % Now the number if windings at the top
+   dup 3 lt { pop 3 } if % If the number if windings < 3, set it =3
+   3 1 roll % number of windings
+   3 -1 roll exch % Exchange A and N
+   5 index 0 eq { % Stright line
+      /theCircle false def
+      6 -1 roll pop % remove R
+      1 phorgl
+   }{ % Circle
+      /theCircle true def
+      5 index 0 lt { % Clockwise 
+         6 -1 roll neg 6 1 roll % Change the R sign
+         5 -1 roll 4 1 roll % Exchange start and end angles
+      } if
+      1 phorglarc
+   } ifelse
+} bind def
+% input: x1 y1 R x2 y2 N A W 
+% output:empty
+% graphics: photon
+/pph {
+   /phorgl { photon } def
+   /phorglarc { photonarc } def
+   ppgh
+}bind def
+% input: x1 y1 R x2 y2 N A W 
+% output:empty
+% graphics: arrowed photon
+/ppha {
+   pph mkarrow
+} bind def
+% input: x1 y1 R x2 y2 N A W 
+% output:empty
+% graphics: gluon
+/pgl {
+   /phorgl { gluon } def
+   /phorglarc { gluearc } def
+   ppgh
+}bind def
+% input: x1 y1 R x2 y2 N A W 
+% output:empty
+% graphics: arrowed gluon
+/pgla {
+   pgl mkarrow
+} bind def
+% Input: (text) x y 
+% Put vertically upset text at given position:
+/puttxt {
+   3 1 roll gsave moveto 1 -1 scale show grestore
+}bind def
+% Added by M.Tentyukov, 21.08.2003:
+% input: x1 y1 R x2 y2 N A W 
+% output: empty
+% graphics: empty
+/pe { pop pop pop pop pop pop pop pop } bind def

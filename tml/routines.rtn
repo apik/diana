@@ -1,0 +1,63 @@
+
+\DEF(askfilename)\read(\(\(Enter the output file name: )))\ENDDEF
+
+\function sift string;\modesave()\-
+* Returns all digits occur in \get(string).
+* Do not forget \setcheck(0123456789)!!!!!
+\let(ret,)
+\let(len,\len(\get(string)))
+\let(i,0)
+\do
+  \if "\check(\let(tmp,\copy(\get(string),\get(i),1)))" eq "true" then
+     \let(ret,\get(ret)\get(tmp))
+  \endif
+\while "\numcmp(\inc(i,1),\get(len))" ne ">" loop
+\moderestore()\return(\get(ret))\end
+
+\function headstr string;\modesave()\-
+* Returns the head of \get(string) till first digit.
+* Do not forget \setcheck(0123456789)!!!!!
+\let(ret,)
+\let(len,\len(\get(string)))
+\let(i,0)
+\do
+  \if "\check(\let(tmp,\copy(\get(string),\get(i),1)))" eq "false" then
+     \let(ret,\get(ret)\get(tmp))
+  \else
+     \let(i,\get(len))
+  \endif
+\while "\numcmp(\inc(i,1),\get(len))" ne ">" loop
+\moderestore()\return(\get(ret))\end
+
+\function functions;\-
+****************************************************************
+* This procedure types the list of all non-commuting functions * 
+* occur in current diagram.                                    *
+****************************************************************
+\let(j,0)\let(k,0)\formatinit()
+   \while "\numcmp(\inc(j,1),\numberofid())" ne ">" do
+      \if "\import(\getid(\get(j)))" eq "f" then
+        \if"\inc(k,1)" ne "1" then\+\formatstr(\(,))\-
+        \endif
+        \+\formatstr(\getid(\get(j)))\-
+      \endif
+   \loop\+\end
+
+\function commuting;\-
+****************************************************************
+* This procedure types the list of all     commuting functions * 
+* occur in current diagram.                                    *
+****************************************************************
+\let(j,0)\let(k,0)\formatinit()
+   \while "\numcmp(\inc(j,1),\numberofid())" ne ">" do
+      \if "\import(\getid(\get(j)))" eq "c" then
+        \if"\inc(k,1)" ne "1" then\+\formatstr(\(,))\-
+        \endif
+        \+\formatstr(\getid(\get(j)))\-
+      \endif
+   \loop\+\end
+
+******************************
+* Just kills the last symbol:*
+******************************
+\function byte str;\return(\copy(\get(str),0,\sub(\len(\get(str)),1)))\end

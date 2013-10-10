@@ -1,0 +1,244 @@
+\MINVERSION(2.28)
+***********************************************************************
+*  The  default Begin - End environment  is defined.                  *
+*  The mode state after the environment is THE SAME as before!        *
+*  Begin calls macro _B_\#(1); End calls macro _E_\#(1)               *
+*                                                                     *
+*  The basic _B_program and _E_program are defined.                   *
+*  They call _BB_program and _EE_program -- in this module are empty. *
+*  _B_program just assumes all arguments as include files.            *
+*                                                                     *
+***********************************************************************
+\IFNSET(__BASIS__)
+   \keepfile
+   \SET(__BASIS__)()
+   \SET(_MainStyle)(basis.tml)
+
+   \DEF(INC)\export(\#(1),\sum(\import(\#(1)),\#(2)))\ENDDEF
+   \DEF(blankline)\onblanklines\eol()\offblanklines\ENDDEF
+
+   \DEF(switch)\modesave()\-
+      \beginlabels\if "\islabelexist(__DEFAULT__)" eq "true" then
+      \rmlabel(default)\relabel(__DEFAULT__,default)\endif
+      \relabel(__EOF,\eof())
+      \ADD(__swch_count)(1)
+      \IFNDEF(case)
+      \DEF(case)\goto(__THEEND__)\FOR(_i_)(\*)\SET(_SWCH_TMP)(\_i_())\IFEQ(_SWCH_TMP)(\eof())\label(__EOF)\ELSE\label(\_i_())\ENDIF\ENDFOR\UNSET(_SWCH_TMP)\ENDDEF
+      \ENDIF
+      \IFNDEF(default)
+      \DEF(default)\goto(__THEEND__)\label(__DEFAULT__)\ENDDEF
+      \ENDIF
+      \moderestore()\goto(\#(1))\ENDDEF
+
+      \DEF(endswitch)\IFNDEF(case)
+          \ERROR(\('endswitch' without 'switch'!))
+      \ELSE
+         \ADD(__swch_count)(-1)
+         \IFEQ(__swch_count)(0)
+            \UNDEF(default)\UNDEF(case)
+         \ENDIF
+      \ENDIF\label(default)\label(__THEEND__)\endlabels\ENDDEF
+
+   \function spreadcmdln _str, __outfname;
+      \if "\let(_i,\pos(.,\get(__outfname)))" eq "-1" then
+        \let(_ext,.)
+        \let(_name,\get(__outfname))
+      \else
+         \let(_ext,\copy(\get(__outfname),\get(_i),\sub(\len(\get(__outfname)),\get(_i))))
+         \let(_name,\copy(\get(__outfname),0,\get(_i)))
+      \endif
+      \while "\pos(!.!,\get(_str))"ne"-1" do
+         \let(_str,\replace(!.!,\get(__outfname),\get(_str)))
+      \loop
+       \while "\pos(.!,\get(_str))"ne"-1" do
+           \let(_str,\replace(.!,\get(_ext),\get(_str)))
+       \loop
+       \while "\pos(!,\get(_str))"ne"-1" do
+          \let(_str,\replace(!,\get(_name),\get(_str)))
+       \loop
+       \return(\get(_str))
+   \end
+
+    \DEF(execute)\system(\spreadcmdln(\#(1),\get(__outfname)))\ENDDEF
+
+   \IFNDEF(_BB_program)
+      \DEF(_BB_program)\ENDDEF
+   \ENDIF
+
+   \IFNDEF(_EE_program)
+      \DEF(_EE_program)\ENDDEF
+   \ENDIF
+
+   \IFNDEF(_B_program)
+      \DEF(_B_program)
+         \SET(_tmp_prg)(_)
+         \FOR(_i_prg)(\*)
+            \IFNSET(_tmp_prg)
+               \include(\_i_prg())
+            \ELSE
+               \UNSET(_tmp_prg)
+            \ENDIF
+         \ENDFOR
+         \program\_BB_program()
+      \ENDDEF
+   \ENDIF
+
+   \IFNDEF(_E_program)
+      \DEF(_E_program)
+         \_EE_program()
+         \IFNEQ(_Begin)(program)
+               \POP(_Begin)(_msg)
+               \ERROR(Unclosed:'\GET(_msg)')
+         \ENDIF
+         \end translate
+      \ENDDEF
+   \ENDIF
+
+***********************  Begin ***********************************
+   \IFNDEF(Begin)
+      \DEF(Begin)\_modesave()\_modesave()\-
+         \ADD(_Bcount)(1)
+         \IFNDEF(\SCAN(_B_\#(1)))
+           \ERROR(\(Begin: unknown )'\#(1)')
+         \ELSE
+            \PUSH(_Begin)(\#(1))
+            \UNSET(_tmp_arg)
+            \FOR(_i)(\*)\PUSHQ(_tmp_arg)(\_i())\ENDFOR
+            \_moderestore()\SCAN(\(\)_B_\#(1))(\GET(_tmp_arg))\_modesave()\-
+            \UNSET(_tmp_arg)
+         \ENDIF
+          \_moderestore()\ENDDEF
+   \ENDIF
+***********************  End ***********************************
+   \IFNDEF(End)
+      \DEF(End)\_modesave()\-
+         \UNSET(_tmp_arg)
+         \FOR(_i)(\*)\PUSHQ(_tmp_arg)(\_i())\ENDFOR
+         \_moderestore()\SCAN(\(\)_E_\#(1))(\GET(_tmp_arg))\_modesave()\-
+         \UNSET(_tmp_arg)
+         \POP(_Begin)(_check_end)
+         \IFNEQ(_check_end)(\#(1))
+           \ERROR(End:'\GET(_check_end)'\( is ended by )'\#(1)'!)
+         \ENDIF
+         \UNSET(_check_end)
+         \ADD(_Bcount)(-1)
+         \_moderestore()\_moderestore()\ENDDEF
+   \ENDIF
+
+   \function replaceall from, to, str;\modesave()\-
+******************************************************************
+* This function replaces ALL enters of "from" by "to" int the    *
+* string "str", for example,                                     *
+* \copyto(A,B,1A2A3A) will return 1B2B3B                         *
+******************************************************************
+   \while "\pos(\get(from),\get(str))" ne "-1" do
+   \let(str,\replace(\get(from),\get(to),\get(str)))
+   \loop
+   \moderestore()\return(\get(str))\end
+
+   \function copyto begin,end,str;\modesave()\-
+******************************************************************
+* This function returns sunstring from the string, for example,  *
+* \copyto(A,B,abcdA123Bcd) will return 123                       *
+******************************************************************
+   \if "\let(b,\pos(\get(begin),\get(str)))" eq "-1" then \+\return()\endif
+   \let(b,\sum(\get(b),\len(\get(begin))))
+   \let(str,
+     \copy(\get(str),
+           \get(b),
+           \sub(\len(\get(str)),\get(b))
+     )
+   )
+   \if "\let(b,\pos(\get(end),\get(str)))" eq "-1" then
+     \moderestore()\return(\get(str))
+   \endif
+   \moderestore()\return(\copy(\get(str),0,\get(b)))
+   \end
+
+   \function ask message;\modesave()\-
+     \do
+        \let(answ,\read(\get(message)))
+        \if "\get(answ)" eq "Y" then \moderestore()\return(Y)\endif
+        \if "\get(answ)" eq "y" then \moderestore()\return(Y)\endif
+        \if "\get(answ)" eq "N" then \moderestore()\return(N)\endif
+        \if "\get(answ)" eq "n" then \moderestore()\return(N)\endif
+        \message(\(Type y or n!))
+     \while "a" eq "a" loop
+   \end
+   \function loadtable tbl, sep;
+******************************************************************
+* This function loads a tabel from external file. For each line  *
+* of the file it creates the global variable containing the line.*
+* The name of the variable is the head of the line -- till first *
+* substring \get(sep).                                           *
+******************************************************************
+      \message(\(Loading table )\get(tbl)...)
+      \if "\open(\get(tbl))" ne "ok" then
+        \runerror(\(Can't open file )'\get(tbl)')
+      \endif
+      \while "\let(dname,\readln())" ne "\eof()" do
+         \export(\copy(\get(dname),0,\pos(\get(sep),\get(dname))),\get(dname))
+      \loop
+      \message(...done)
+   \end
+
+******************************************************************
+* The following  macro returns substring of exported value with  *
+* the name as its second argument, started by its first argument *
+* -- till first space. Used for pick out values from tables.     *
+******************************************************************
+   \DEF(SAMPLE)\copyto(\#(1),\( ),\import(\#(2)))\ENDDEF
+
+   \function formatstr str;\-
+     \if "\numcmp(\sum(\import(__strlen),\len(\get(str))),76)" eq ">" then
+        \export(__strlen,\len(\get(str)))\+\return(\eol()\get(str))
+     \else
+        \INC(__strlen,\len(\get(str)))\+\return(\get(str))
+     \endif
+   \end
+
+   \function formatinit;
+     \export(__strlen,0)
+   \end
+***********************************************************************
+* These three functions are used for storing and restoring sttrings   *
+* \store(name,str) stores str into block named name( and returns      *
+* this string); function \restore(name,n) returns n-th string from    *
+* the block name (\restore(name,0) just returns total number of       *
+* strings, stored in the block, may be, 0); \forget(name) just clears *
+* allocated block; returns empty string.                              *
+* And the macro \DUMPBUFFER(name) dumps the buffer.                   *
+***********************************************************************
+   \function store name,str;\modesave()\-
+      \if not exist "_Ss\get(name)_0" then
+         \export(_Ss\get(name)_0,0)
+      \endif
+      \export(
+       _Ss\get(name)_\export(_Ss\get(name)_0,\sum(\import(_Ss\get(name)_0),1)),
+        \get(str)
+      )
+   \moderestore()\return(\get(str))\end
+
+   \function restore name,n;\return(\import(_Ss\get(name)_\get(n)))\end
+
+   \function forget name;\modesave()\-
+      \if exist "_Ss\get(name)_0" then
+        \killexp(_Ss\get(name)_\import(_Ss\get(name)_0))
+        \do
+          \killexp(
+       _Ss\get(name)_\export(_Ss\get(name)_0,\sub(\import(_Ss\get(name)_0),1))
+          )
+        \while exist "_Ss\get(name)_0" loop
+      \endif
+   \moderestore()\end
+
+   \function  sysinfo;
+      * User: \asksystem(whoami,) host: \asksystem(hostname,)
+      * \asksystem(date,)
+   \end
+
+   \DEF(DUMPBUFFER)\blank(\let(_In_,_Ss\#(1)_)\let(_Ii_,0)
+       )\while exist "\get(_In_)\inc(_Ii_,1)" do
+\import(\get(_In_)\get(_Ii_))
+\loop\ENDDEF
+\ENDIF

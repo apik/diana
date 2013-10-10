@@ -1,0 +1,21 @@
+#!/bin/sh
+
+prefix=@prefix@
+tmldir="@datarootdir@/diana/tml"
+exec_prefix=@exec_prefix@
+exec_prefix_set=no
+
+DIANAROOT=${prefix}
+export DIANAROOT
+DIANATMLPATH=${tmldir}
+export DIANATMLPATH
+PATH="${prefix}/bin/:${PATH}"
+export PATH
+DIANANAMETOUSE="$0"
+export DIANANAMETOUSE
+DIANANAME="diana.bin"
+export DIANANAME
+QGRAFNAME="${prefix}/bin/qgraf"
+export QGRAFNAME
+
+diana.bin $*
