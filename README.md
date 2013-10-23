@@ -6,7 +6,7 @@ DIagram ANAlizer - QGRAF based program for efficient Feynman diagram generation 
 ##### Installation:
 
 1. Download QGRAF source file qgraf-3.1.4.f from http://cfif.ist.utl.pt/~paulo/qgraf.html 
-and put it into `qgraf/` subdirectory
+and put it into `qgraf/` subdirectory if internet connection is available and WGET or CURL are in your path it will be downloaded automatically
 2. For this step GNU autotools http://www.gnu.org/software/autoconf/ needed:
 
 `~$autoreconf -i`
