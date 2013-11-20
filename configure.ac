@@ -21,11 +21,11 @@ if test x"$CURL_CHECK" != x"yes" ; then
 AC_MSG_ERROR([Please install wget or curl  before installing.])
 else
 dnl we have curl installed
-AC_SUBST([DOWNLOAD_PROGRAM],[curl  --user anonymous:DIANA -o])
+AC_SUBST([DOWNLOAD_PROGRAM],["curl  --user anonymous:DIANA -o"])
 fi
 else 
 dnl we have wget installed
-AC_SUBST([DOWNLOAD_PROGRAM],[wget --quiet --user=anonymous --password=DIANA -O])
+AC_SUBST([DOWNLOAD_PROGRAM],["wget --quiet --user=anonymous --password=DIANA -O"])
 fi
     
 
