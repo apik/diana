@@ -1,9 +1,9 @@
-AC_INIT([diana], 2.3.6, pikelner@theor.jinr.ru)
+AC_INIT([diana], 2.3.6, https://github.com/apik/diana/)
 AC_CONFIG_SRCDIR(src/init.c)
 
 AM_INIT_AUTOMAKE([foreign])
 
-dnl lib neede for DIANA
+dnl lib needed for DIANA
 AC_CHECK_LIB([m],[ceil])
                                                            
 AC_PROG_CC
@@ -21,11 +21,11 @@ if test x"$CURL_CHECK" != x"yes" ; then
 AC_MSG_ERROR([Please install wget or curl  before installing.])
 else
 dnl we have curl installed
-AC_SUBST([DOWNLOAD_PROGRAM],[curl  --user anonymous:DIANA -o])
+AC_SUBST([DOWNLOAD_PROGRAM],["curl  --user anonymous:DIANA -o"])
 fi
 else 
 dnl we have wget installed
-AC_SUBST([DOWNLOAD_PROGRAM],[wget --quiet --user=anonymous --password=DIANA -O])
+AC_SUBST([DOWNLOAD_PROGRAM],["wget --quiet --user=anonymous --password=DIANA -O"])
 fi
     
 

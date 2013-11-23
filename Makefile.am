@@ -1,4 +1,3 @@
-# ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = \
 	qgraf \
 	src
@@ -25,6 +24,3 @@ tml/specmode.tml \
 tml/su3_nocolor.inc \
 tml/tbl.prg 
 
-# include aminclude.am
-
-# EXTRA_DIST = autogen.sh $(DX_CONFIG) doc/html
