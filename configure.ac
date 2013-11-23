@@ -1,9 +1,9 @@
-AC_INIT([diana], 2.3.6, pikelner@theor.jinr.ru)
+AC_INIT([diana], 2.3.6, https://github.com/apik/diana/)
 AC_CONFIG_SRCDIR(src/init.c)
 
 AM_INIT_AUTOMAKE([foreign])
 
-dnl lib neede for DIANA
+dnl lib needed for DIANA
 AC_CHECK_LIB([m],[ceil])
                                                            
 AC_PROG_CC
