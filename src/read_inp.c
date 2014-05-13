@@ -1746,8 +1746,11 @@ static int processFLine(int l, int v, int fflow, int *lastVert)
       /*Define type of vertex v:*/
       if(  (fflow<0)||(fflowEl<0)  )/*At least one of directions is opposite*/
          output[top_out].majorana=-1;
-      else  if(  (fflow==0)&&(fflowEl==0)  )/* ----*---- */
+/* special treatment of majorana particles latter
+ *
+      else  if(  (fflow==0)&&(fflowEl==0)  )
          output[top_out].majorana='\0';
+*/
       else/*No wrong lines at the vertex:*/
          output[top_out].majorana='\1';
       addtoidentifiers(output[top_out++].i,'f','v');
@@ -1779,8 +1782,11 @@ static int processFLine(int l, int v, int fflow, int *lastVert)
          /*The line we are processing is directed from tmp to v. We are moving opposite
          fflow, so fflow is directed from v to tmp.*/
          if (fflowEl==0){/*Majorana, we must detemine the sign*/
-            if(tmp<v)/*Line is directed up, negative in 'red'*/
+            if(tmp<v) {/*Line is directed up, negative in 'red'*/
                output[top_out].fflow=-1;
+	      // AVB: change vertex fflow if fflow is flipped for majorana 
+               output[top_out - 1].majorana=-1; 
+	    }
          }/*if (fflowEl==0)*/
       }/*block*/
 
