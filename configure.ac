@@ -1,4 +1,4 @@
-AC_INIT([diana], 2.3.6, https://github.com/apik/diana/)
+AC_INIT([diana], 2.3.7, https://github.com/apik/diana/)
 AC_CONFIG_SRCDIR(src/init.c)
 
 AM_INIT_AUTOMAKE([foreign])

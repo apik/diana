@@ -1,5 +1,5 @@
 /*
-    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.36 $.
+    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.37 $.
     Copyright (C) Mikhail Tentyukov <tentukov@physik.uni-bielefeld.de>
 
     This program is free software; you can redistribute it and/or modify
@@ -163,7 +163,7 @@
 #define RUNSIGNAL "Halt signal from interpreter."
 #define NOERROR "Success."
 #define INITIALIZATION \
-"DIANA $Revision: 2.36 $ Copyright (C) 1999-2003 M.Tentyukov.\n<tentukov@physik.uni-bielefeld.de>"
+"DIANA $Revision: 2.37 $ Copyright (C) 1999-2003 M.Tentyukov.\n<tentukov@physik.uni-bielefeld.de>"
 #define DONEINIT "...done initialization."
 #define ONLYVERIFY "Checking mode detected."
 #define READDIAGRAMS "Reading diagrams..."
@@ -184,7 +184,7 @@
 /*begin cmd_line.c*/
 #define TOOSMALLNUM "Negative number (%s) not allowed."
 #define TOOBIGNUM "Too big number (%s)."
-#define CURRENTVERSION "$Revision: 2.36 $"
+#define CURRENTVERSION "$Revision: 2.37 $"
 #define CURRENTOPTIONS "Current options:\n"
 #define PROMPT "option="
 #define ILLEGALOPTION "Illegal option."

@@ -1,5 +1,5 @@
 /*
-    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.36 $.
+    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.37 $.
     Copyright (C) Mikhail Tentyukov <tentukov@physik.uni-bielefeld.de>
 
     This program is free software; you can redistribute it and/or modify
@@ -1446,7 +1446,7 @@ struct localMkchat_struct *l=(struct localMkchat_struct *)localMkchat;
          if(c->ind==6)/*Now in c->par we have hex number - the length of the filename*/
             return hex2int(c->par,c->maxparind);
          else{/*Now in c->par we have the file name*/
-            int optfd=open(c->par,O_WRONLY|O_CREAT,S_IRWXU);
+           int optfd=open(c->par,O_WRONLY|O_CREAT,0644); /* AFP create attr */
             pid_t lpid;
             if(optfd<0){
                /*See rproto.h*/add_q1_queue(2,c2pNOK,&l->peer_queue);/*Fail*/
@@ -2097,7 +2097,7 @@ int runserver(int n, int thenice)
 
          fprintf(portFile,"%d\n", (int) ntohs(sa.sin_port));
          /*Now store the "password":*/
-         fprintf(portFile,"%d\n", rndint);
+         fprintf(portFile,"%8d\n", rndint);
          /* Store number of allowed handlers:*/
          fprintf(portFile,"%d\n", n);
          /* Store the nice:*/

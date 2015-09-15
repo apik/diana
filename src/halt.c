@@ -1,5 +1,5 @@
 /*
-    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.36 $.
+    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.37 $.
     Copyright (C) Mikhail Tentyukov <tentukov@physik.uni-bielefeld.de>
 
     This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,8 @@ va_list arg_ptr;
     fprintf(stderr,"\n");
  }
  if(log_file!=NULL){
+    va_end (arg_ptr);
+    va_start (arg_ptr, fmt);
     fprintf(log_file,"\n");
     if(errorlevel)fprintf(log_file,ERRORMSG);
     vfprintf(log_file,fmt, arg_ptr);
@@ -61,10 +63,7 @@ void message(char *fmt, ...)
 {
 va_list arg_ptr;
  va_start (arg_ptr, fmt);
-#ifdef __x86_64__
- va_list arg_ptr2;
- va_copy (arg_ptr2, arg_ptr);
-#endif
+
  if(message_enable){
     fflush(stdout);
     vfprintf(stderr,fmt, arg_ptr);
@@ -72,17 +71,11 @@ va_list arg_ptr;
     fflush(stderr);
  }/*message_enable*/
  if(log_file!=NULL){
-#ifdef __x86_64__
-    vfprintf(log_file,fmt, arg_ptr2);
-#else
+    va_end (arg_ptr);
+    va_start (arg_ptr, fmt);
     vfprintf(log_file,fmt, arg_ptr);
-#endif
-
     fprintf(log_file,"\n");
  }
  va_end (arg_ptr);
-#ifdef __x86_64__
- va_end (arg_ptr2);
-#endif
 
 }/*message*/

@@ -1,5 +1,5 @@
 /*
-    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.36 $.
+    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.37 $.
     Copyright (C) Mikhail Tentyukov <tentukov@physik.uni-bielefeld.de>
 
     This program is free software; you can redistribute it and/or modify
@@ -187,8 +187,8 @@ char q_char=Q_CHAR;
 set_of_char regular_chars;
 
 extern int isdebug;
-extern void halt(char *fmt, ...);/*halt.h*/
-extern void message(char *s1,char *s2);/*halt.h*/
+extern void halt(char *fmt, ...);/*halt.c*/
+extern void message(char *s1,...);/*halt.c*/
 extern FILE *link_file(char *name, long pos);/*utils.c*/
 extern FILE *link_stream(char *name, long pos);/*utils.c*/
 extern int unlink_file(char *name);/*utils.c*/

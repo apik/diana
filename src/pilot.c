@@ -1,5 +1,5 @@
 /*
-    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.36 $.
+    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.37 $.
     Copyright (C) Mikhail Tentyukov <tentukov@physik.uni-bielefeld.de>
 
     This program is free software; you can redistribute it and/or modify
@@ -182,7 +182,7 @@ int callrun;
 mtrace();
 #endif
    /* Start initialisation:*/
-   /* Pick out the number from the string "$Revision: 2.36 $":*/
+   /* Pick out the number from the string "$Revision: 2.37 $":*/
    {/*Block begin*/
         char *tmp=currentrevision;
         for( tmp=currentrevision;(*tmp!=' ')&&(*tmp!='\0');tmp++);

@@ -1,5 +1,5 @@
 /*
-    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.36 $.
+    This file is part of DIANA program (DIagram ANAlyser) $Revision: 2.37 $.
     Copyright (C) Mikhail Tentyukov <tentukov@physik.uni-bielefeld.de>
 
     This program is free software; you can redistribute it and/or modify
@@ -15,10 +15,6 @@
 #include <alloc.h>
 #endif
 #define COMP_ARR_L 5
-
-#ifdef __x86_64__
-#define _FILE_OFFSET_BITS 64
-#endif
 
 /*2147483646/4-1:*/
 #define TOP_JOBS_ID 536870910
@@ -66,7 +62,7 @@
 #define MAX_OUTPUT_LEN 70
 #define MAX_DIAGRAM_NUMBER_S 65520
 #define MAX_DIAGRAM_NUMBER_L 2100000000l
-#define MAX_STR_LEN 1024
+#define MAX_STR_LEN 10240
 
 #define MAX_MOMENTA_SET 30
 #define MAX_TOPOLOGY_ID_SET 30
@@ -87,11 +83,7 @@
 #define DELTA_FOR_ARGS 10
 #define COMMAND_HASH_SIZE 107
 #define DELTA_DEF_TOP 4
-#ifdef __x86_64__
-#define MAX_LABELS 12000000
-#else
 #define MAX_LABELS 32500
-#endif
 #define DELTA_LABELS 20
 #define MAX_LOOP_DEPTH 20
 #define MAX_MACRO_ARG 1048
