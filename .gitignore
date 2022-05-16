@@ -1,0 +1,8 @@
+src/*.o
+src/.deps/*
+src/diana.bin
+Makefile
+Makefile.in
+qgraf/Makefile
+qgraf/Makefile.in
+
