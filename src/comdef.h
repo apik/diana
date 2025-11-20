@@ -48,7 +48,7 @@
 
 #define ONLY_ELEMENTARY_LOOP_MOMENTA 1
 /*default for toolc.c:*/
-#define MAX_INCLUDE 50
+#define MAX_INCLUDE 200
 /*utils.c:*/
 
 /*Maximal numbers of attempts to read/write to a descriptor if 0 is returned:*/

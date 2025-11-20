@@ -81,7 +81,7 @@ static char **defnames=NULL;
 static long deftop=-1;
 static long maxdeftop=0;
 
-static void proc_IF(int bool)
+static void proc_IF(int bool_arg)
 {
   IF_depth++;
   if(!(IF_depth < max_IF_depth))
@@ -89,7 +89,7 @@ static void proc_IF(int bool)
             (max_IF_depth+=DELTA_IF_DEPTH)*
               sizeof(char *)))==NULL)
               halt(NOTMEMORY,NULL);
-  IF_stack[IF_depth]=(bool)?1:2;
+  IF_stack[IF_depth]=(bool_arg)?1:2;
 }/*proc_IF*/
 
 static void register_command(char *command, int numeric)
@@ -205,14 +205,14 @@ static void put_cmd(char cmd)/*puts command into polish_line*/
   polish_line[ptr++]=cmd;/* Put command*/
 }/*put_cmd*/
 
-static void put_bool(char bool)/*puts boolean value into polish_line*/
+static void put_bool(char bool_arg)/*puts boolean value into polish_line*/
 {
   if(ptr+2>max_ptr)
      if((polish_line=(char *)realloc(polish_line,
                     (max_ptr+=DELTA_POLISH_LINE)*sizeof(char)))==NULL)
         halt(NOTMEMORY,NULL);
   polish_line[ptr++]=tpBOOLEAN;
-  polish_line[ptr++]=bool;
+  polish_line[ptr++]=bool_arg;
 }/*put_bool*/
 
 static void put_val(char val)/*puts value into polish_line*/
