@@ -28,7 +28,7 @@ void *memcpy(void *dest, const void *src, size_t n);
 
 /*#define _HPUX_SOURCE*/
 #define SCAN_BUF_SIZE 1024
-#define MAX_STRING_LENGTH 1048
+#define MAX_STRING_LENGTH 10480 /* old: 1048 */
 #define MAX_NAME_LENGTH 255
 #define MAX_LINES_IN_VERTEX 8
 #define ESC_CHAR '\\'

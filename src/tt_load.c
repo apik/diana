@@ -43,7 +43,7 @@
 #endif
 
 #ifndef MAX_STR_LEN
-#define MAX_STR_LEN 1024
+#define MAX_STR_LEN 1024000 /* old: 1024 */
 #endif
 
 /********************************************************************************
